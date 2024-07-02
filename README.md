@@ -8,4 +8,5 @@ O código não funcionará se você não possuir uma API Bimer instalada e as cr
 Atualmente a credencial que você verá no código é de um computador local, ou seja, não está liberado na internet.
 
 
-![Texto alternativo](./images/image.png)
+![](https://github.com/CoutinhoElias/Bimer_api/blob/main/image.png)
+
