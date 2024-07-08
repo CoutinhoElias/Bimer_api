@@ -3,6 +3,7 @@ import flet as ft
 from datetime import datetime
 
 from partials.data_table import create_datatable
+from partials.button import MyButton
 from querys.qry_pedidos import PedidosDeCompra
 from querys.qry_fornecedor import Fornecedor
 
@@ -12,12 +13,32 @@ class PedidoView:
 
         self.id_fornecedor = None
 
+        # ============================================================================================================================= 
+        # Jogue aqui seus estilos:
+
+        # Estilo para os butões de data.   
+        self.button_style = ft.ButtonStyle(
+                                        shape={
+                                            ft.MaterialState.HOVERED: ft.CircleBorder(),
+                                            ft.MaterialState.DEFAULT: ft.CircleBorder(),
+                                        },
+                                    )
+        
+        # Estilo para os campos de entrada
+        # self.input_style = ft.TextStyle(
+        #     color=ft.colors.WHITE,  # Cor do texto
+        #     placeholder_color=ft.colors.GREY_400,  # Cor dos placeholders
+        #     border_color=ft.colors.ORANGE_300  # Cor da borda
+        # )        
+        # =============================================================================================================================
+
         self.pg_codigo_chamada = ft.TextField(
             label="Código", 
             hint_text="FORNECEDOR",
             col={"md": 2},
             focused_border_color=ft.colors.YELLOW,
             input_filter=ft.NumbersOnlyInputFilter(),
+            # text_style=self.input_style,
             on_blur = self.handle_change_cd_crm, 
         )
 
@@ -87,7 +108,7 @@ class PedidoView:
 
     def handle_date_change_end(self, e):
         self.txt_pick_date_end.value = e.control.value.strftime('%d/%m/%Y')
-        self.pesquisa_pedidos()
+        # self.pesquisa_pedidos()
         self.page.update()
 
     def handle_change_cd_crm(self, e):
@@ -96,10 +117,14 @@ class PedidoView:
         self.pesquisa_fornededor(codigo_crm=self.pg_codigo_chamada.value)
         self.pg_codigo_chamada.update()
 
-
     def handle_date_dismissal(self, e):
         self.page.add(ft.Text("DatePicker dismissed"))
         self.page.update()
+
+    def filtrar_clicked(self, e):
+        self.pesquisa_pedidos()
+        self.datatable.rows = []
+        # print("Cancel clicked")
 
     def create_date_picker(self):
         
@@ -211,24 +236,13 @@ class PedidoView:
             controls=[self.pg_dd_codigo_empresa, self.pg_dd_status_pedido, self.pg_codigo_chamada, self.pg_nome_fornecedor],
         )
 
-
-        # =============================================================================================================================    
-        button_style = ft.ButtonStyle(
-                                        shape={
-                                            ft.MaterialState.HOVERED: ft.CircleBorder(),
-                                            ft.MaterialState.DEFAULT: ft.CircleBorder(),
-                                        },
-                                    )
-        # =============================================================================================================================
-
-
         btn_pick_date_start = ft.IconButton(
                     icon=ft.icons.DATE_RANGE,
                     icon_color="blue400",
                     icon_size=30,
                     tooltip="Data Inicial.",
                     col={"md": .6},
-                    style=button_style,
+                    style=self.button_style,
                     on_click=lambda e: self.page.open(self.create_date_picker()), 
                 )
 
@@ -238,16 +252,19 @@ class PedidoView:
                     icon_size=30,
                     tooltip="Data Inicial.",
                     col={"md": .6},
-                    style=button_style,
+                    style=self.button_style,
                     on_click=lambda e: self.page.open(self.create_date_picker_end()),
                 )
 
         spacer = ft.Container(col={"md": .4},)  # Espaçador
 
+        # self.pesquisa_pedidos() / self.filtrar_clicked
+        button = MyButton(text="Filtrar", on_click=self.filtrar_clicked)
+
         datas_e_botoes = ft.ResponsiveRow(
             columns=12,
             spacing=0,
-            controls=[self.txt_pick_date_start, btn_pick_date_start, spacer, self.txt_pick_date_end, btn_pick_date_end],
+            controls=[self.txt_pick_date_start, btn_pick_date_start, spacer, self.txt_pick_date_end, btn_pick_date_end, button],
         )
 
         # Para existência de um Scroll na tabela

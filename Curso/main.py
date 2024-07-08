@@ -15,6 +15,7 @@ class App:
         self.page.bgcolor = ft.colors.BLACK
         self.page.title = "Sistema SV em Flet"
         self.page.theme_mode = "dark"
+        # self.page.theme_mode = ft.colors.BLACK
         self.page.window_center()
 
         page.window_width = 1465
@@ -51,24 +52,30 @@ class App:
                 case "/":
                     view = HomeView().get_content()
                     app_bar_title = "Pagina Principal"
+                    app_bar_color = ft.colors.GREY_800
                 case "/store":
                     view = StoreView().get_content()
                     app_bar_title = "Store"
+                    app_bar_color = ft.colors.GREY_800
                 case "/pedido":
                     view = PedidoView(self.page).get_content()
-                    app_bar_title = "Pedido de Compra"                    
+                    app_bar_title = "Pedido de Compra"  
+                    app_bar_color = ft.colors.GREY_800                  
                 case _:
                     view = HomeView().get_content()
                     app_bar_title = "Pagina Principal"
+                    app_bar_color = ft.colors.GREY_800
 
-            self.page.views.append(ft.View(
-                route,
-                [
-                    self.page.drawer,
-                    MyAppBar(app_bar_title, ft.colors.RED_500),
-                    view
-                ]
-            ))
+            self.page.views.append(
+                ft.View(
+                    route,
+                    [
+                        self.page.drawer,
+                        MyAppBar(app_bar_title, app_bar_color),
+                        view
+                    ]
+                )
+            )
             self.page.update()
 
         self.page.on_route_change = route_change
