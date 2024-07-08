@@ -1,10 +1,10 @@
 import flet as ft
 
-tb_tabela = ft.Ref[ft.DataTable]()
+# tb_tabela = ft.Ref[ft.DataTable]()
 
 # Define the create_datatable function
 # data=None, styles=None, events=None
-def create_datatable():
+def create_datatable(ref=None):
 
     # Create the DataTable with the specified parameters
     data_table = ft.DataTable(
@@ -24,7 +24,7 @@ def create_datatable():
         show_checkbox_column=True,
         divider_thickness=0,
         # column_spacing=200,
-        ref=tb_tabela,
+        ref=ref,
         columns=[
             ft.DataColumn(ft.Text("Código", width=50), on_sort=lambda e: print(f"{e.column_index}, {e.ascending}"),),
             ft.DataColumn(ft.Text("Status", width=40), on_sort=lambda e: print(f"{e.column_index}, {e.ascending}"),),

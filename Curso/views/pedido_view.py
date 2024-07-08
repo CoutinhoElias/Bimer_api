@@ -10,8 +10,8 @@ from querys.qry_fornecedor import Fornecedor
 class PedidoView:
     def __init__(self, page):
         self.page = page
-
         self.id_fornecedor = None
+        self.tb_tabela = ft.Ref[ft.DataTable]()
 
         # ============================================================================================================================= 
         # Jogue aqui seus estilos:
@@ -99,7 +99,7 @@ class PedidoView:
             # icon=ft.icons.DATE_RANGE,
         )
 
-        self.datatable = create_datatable()
+        self.datatable = create_datatable(self.tb_tabela)
 
     def handle_date_change_start(self, e):
         # self.pg_codigo_chamada.focus()
@@ -154,24 +154,12 @@ class PedidoView:
         e.control.update()
 
         if e.control.selected:
-            print('column_1_text')
-
-            # Get the selected row index
-            # selected_row_index = tb_tabela.current.rows.index(e.control)
-
-            # Access the ft.Text content of Column 1 for the selected row
-            # column_1_text = tb_tabela.current.rows[selected_row_index].cells[0].content.value
-            # id_produto, produto_encontrado, nome_produto = consultar_produto_codigo_api(column_1_text)
-            # excluir_datatable.append(id_produto)
+            if self.tb_tabela.current:
+                selected_row = e.control  # Pega a linha selecionada diretamente do evento
+                selected_cell_value = selected_row.cells[0].content.value
+                print(selected_cell_value)
         else:
-            print('column_1_text')
-
-            # unselected_row_index = tb_tabela.current.rows.index(e.control)
-            # column_1_text = tb_tabela.current.rows[unselected_row_index].cells[0].content.value
-            # id_produto, produto_encontrado, nome_produto = consultar_produto_codigo_api(column_1_text)
-            # excluir_datatable.remove(id_produto)
-
-        print('column_1_text')
+            print('Deselected')
 
     def datatable_itens(self, codigo, status, data_emissao, data_entrega, descricao, observacao, selecionado=False):
         self.datatable.rows.append(
