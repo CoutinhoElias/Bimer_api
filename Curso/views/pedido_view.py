@@ -2,7 +2,7 @@ import flet as ft
 
 from datetime import datetime
 
-from partials.data_table import create_datatable
+from partials.data_table import create_datatable, my_table
 from partials.button import MyButton
 from querys.qry_pedidos import PedidosDeCompra
 from querys.qry_fornecedor import Fornecedor
@@ -11,7 +11,10 @@ class PedidoView:
     def __init__(self, page):
         self.page = page
         self.id_fornecedor = None
+
+        # Definição do Ref().
         self.tb_tabela = ft.Ref[ft.DataTable]()
+        self.tb_tabela_itens_pedido = ft.Ref[ft.DataTable]()
 
         # ============================================================================================================================= 
         # Jogue aqui seus estilos:
@@ -99,7 +102,35 @@ class PedidoView:
             # icon=ft.icons.DATE_RANGE,
         )
 
-        self.datatable = create_datatable(self.tb_tabela)
+        # ---------------------------------------------------------------------------------------------------------------------------------------
+        # TABELAS DA VIEW
+        # ---------------------------------------------------------------------------------------------------------------------------------------
+        # LISTA DE PEDIDOS        
+        self.campos_pedido = [
+            ft.DataColumn(ft.Text("Código", width=50), on_sort=lambda e: print(f"{e.column_index}, {e.ascending}"),),
+            ft.DataColumn(ft.Text("Status", width=40), on_sort=lambda e: print(f"{e.column_index}, {e.ascending}"),),
+            ft.DataColumn(ft.Text("Data Emissao", width=150), on_sort=lambda e: print(f"{e.column_index}, {e.ascending}"),),
+            ft.DataColumn(ft.Text("Data Entrega", width=150)),
+            ft.DataColumn(ft.Text("Descricao", width=70), on_sort=lambda e: print(f"{e.column_index}, {e.ascending}"),),
+            ft.DataColumn(ft.Text("Observacao", width=240), numeric=True,  on_sort=lambda e: print(f"{e.column_index}, {e.ascending}"),), 
+        ]
+        self.datatable = create_datatable(self.tb_tabela, self.campos_pedido)
+        self.table_order = my_table(self.datatable)
+
+        # LISTA DE ITENS DO PEDIDO
+        self.campos_pedido_itens = [
+            ft.DataColumn(ft.Text("Código", width=50), on_sort=lambda e: print(f"{e.column_index}, {e.ascending}"),),
+            ft.DataColumn(ft.Text("Descricao", width=70), on_sort=lambda e: print(f"{e.column_index}, {e.ascending}"),),
+            ft.DataColumn(ft.Text("NCM", width=40), on_sort=lambda e: print(f"{e.column_index}, {e.ascending}"),),
+            ft.DataColumn(ft.Text("Quantidade", width=80), on_sort=lambda e: print(f"{e.column_index}, {e.ascending}"),),
+            ft.DataColumn(ft.Text("Vl. Unit.", width=80)),
+            ft.DataColumn(ft.Text("IPI", width=50), numeric=True,  on_sort=lambda e: print(f"{e.column_index}, {e.ascending}"),), 
+            ft.DataColumn(ft.Text("ICMS", width=50), numeric=True,  on_sort=lambda e: print(f"{e.column_index}, {e.ascending}"),), 
+            ft.DataColumn(ft.Text("Vl. Total", width=80)),
+        ]
+        self.datatable_itens_pedido = create_datatable(self.tb_tabela_itens_pedido, self.campos_pedido_itens)
+        self.table_order_items = my_table(self.datatable_itens_pedido)
+        # ---------------------------------------------------------------------------------------------------------------------------------------
 
     def handle_date_change_start(self, e):
         # self.pg_codigo_chamada.focus()
@@ -134,8 +165,9 @@ class PedidoView:
             error_format_text='Data inválida',
             field_label_text='Digite uma data',
             help_text='Selecione uma data no calendário',
+            expand=True,
             on_change=self.handle_date_change_start,
-            on_dismiss=self.handle_date_dismissal
+            on_dismiss=self.handle_date_dismissal,
         )
     
     def create_date_picker_end(self):
@@ -149,6 +181,9 @@ class PedidoView:
             on_dismiss=self.handle_date_dismissal
         )    
 
+    # ---------------------------------------------------------------------------------------------------------------------------------------
+    # IDENTIFICANDO PEDIDO SELECIONADO - Order
+    # ---------------------------------------------------------------------------------------------------------------------------------------
     def change_select(self, e):
         e.control.selected = not e.control.selected
         e.control.update()
@@ -161,7 +196,12 @@ class PedidoView:
         else:
             print('Deselected')
 
-    def datatable_itens(self, codigo, status, data_emissao, data_entrega, descricao, observacao, selecionado=False):
+    # ---------------------------------------------------------------------------------------------------------------------------------------
+    # POPULANDO TABELAS
+    # ---------------------------------------------------------------------------------------------------------------------------------------
+
+    #TABELA DE PEDIDOS
+    def add_datatable_itens(self, codigo, status, data_emissao, data_entrega, descricao, observacao, selecionado=False):
         self.datatable.rows.append(
             ft.DataRow(
                 [
@@ -178,6 +218,26 @@ class PedidoView:
         )
         self.datatable.update()
         # self.page.banner.content.controls[0].controls[1].controls[1].update()
+
+    # TABELA DE ITESN DO PEDIDO
+    def add_datatable_itens_pedido(self, codigo, status, data_emissao, data_entrega, descricao, observacao, selecionado=False):
+        self.datatable_itens_pedido.rows.append(
+            ft.DataRow(
+                [
+                    ft.DataCell(ft.Text(value=codigo)),
+                    ft.DataCell(ft.Text(status)),
+                    ft.DataCell(ft.Text(data_emissao)),
+                    ft.DataCell(ft.Text(data_entrega)),
+                    ft.DataCell(ft.Text(descricao)),
+                    ft.DataCell(ft.Text(observacao)),
+                ],
+                selected=selecionado,
+                on_select_changed = self.change_select,
+            )
+        )
+        self.datatable_itens_pedido.update()
+        # self.page.banner.content.controls[0].controls[1].controls[1].update()
+    # ---------------------------------------------------------------------------------------------------------------------------------------
 
     def pesquisa_fornededor(self, codigo_crm):
         self.pg_codigo_chamada.value = self.pg_codigo_chamada.value.zfill(6)
@@ -215,7 +275,7 @@ class PedidoView:
         df_pedidos = pedido_de_compra.obter_dataframe_pedidos_de_compra()
 
         for index, row in df_pedidos.iterrows():
-            self.datatable_itens(row['Codigo'], row['Status'], row['DataEmissao'], row['DataEntrega'], row['Descricao'], row['Observacao'], selecionado=False)
+            self.add_datatable_itens(row['Codigo'], row['Status'], row['DataEmissao'], row['DataEntrega'], row['Descricao'], row['Observacao'], selecionado=False)
 
     def get_content(self):
 
@@ -255,25 +315,54 @@ class PedidoView:
             controls=[self.txt_pick_date_start, btn_pick_date_start, spacer, self.txt_pick_date_end, btn_pick_date_end, button],
         )
 
-        # Para existência de um Scroll na tabela
-        mytable = ft.Column(
-            expand=True,
-            controls=[
-                ft.Row( 
-                    controls = [self.datatable], 
-                    scroll = ft.ScrollMode.ALWAYS
-                )
-
-            ],
-            scroll=ft.ScrollMode.ALWAYS, # Define a existência de um Scroll
-            on_scroll_interval=0, # Define o intervalo de exibição da fo.Column o padrão é 100 milissegundos           
-        )
-
 
         layout = ft.Column(
-            controls=[empresa_codigo_fornecedor, datas_e_botoes, mytable],
+            controls=[empresa_codigo_fornecedor, datas_e_botoes, self.table_order],
             alignment=ft.alignment.center,
             expand=True
         )
 
-        return layout
+        my_tab = ft.Tabs(
+                # ref=tabs_from_main,
+                tabs=[
+                    ft.Tab(
+                        text='Lista de Pedidos',
+                        icon=ft.icons.TABLE_VIEW_OUTLINED,
+                        content=ft.Container(
+                                    expand=False,
+                                    padding=ft.padding.all(10),
+                                    content= layout,
+                                    # width=20,
+                                    # height=5,
+                                    # bgcolor=ft.colors.AMBER_100                
+                        ),
+                    ),
+
+                    ft.Tab(
+                        text='Itens do Pedido selecionado',
+                        icon=ft.icons.TABLE_ROWS_OUTLINED,
+                        content=ft.Container(
+                            expand=False,
+                            padding=ft.padding.all(2),
+                            content=ft.Column(
+                                expand=True,
+                                controls= 
+                                    [
+                                        self.table_order_items # layout ******************  OUTRA TAB A SER PREENCHIDA ******************
+                                    ],
+                            scroll=ft.ScrollMode.ALWAYS, # Define a existência de um Scroll
+                            on_scroll_interval=0, # Define o intervalo de exibição da fo.Column o padrão é 100 milissegundos                         
+                            ),                   
+                        )                
+                    ),            
+                ],
+                selected_index = 0,
+                indicator_tab_size = True,
+                label_color=ft.colors.GREEN,
+                # width=100, # Ajuste da Largura
+                height=850, # Ajuste da altura
+                # expand=1,
+                # on_change=lambda _: print(directory_path_or_file.value)
+            )
+
+        return my_tab

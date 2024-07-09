@@ -25,7 +25,19 @@ class App:
             'windows': ft.PageTransitionTheme.CUPERTINO
         })
 
+        # Configuração do idioma
+        self.page.locale_configuration = ft.LocaleConfiguration(
+            supported_locales=[
+                ft.Locale("pt", "BR"),  # Português, Brasil
+                ft.Locale("de", "DE"),  # Alemão, Alemanha
+                ft.Locale("fr", "FR"),  # Francês, França
+                ft.Locale("es"),        # Espanhol
+            ],
+            current_locale=ft.Locale("pt", "BR"),  # Define o idioma inicial como Português do Brasil
+        )
+
         self.setup_navigation()
+        # current_locale = App.locale_service.get_locale()
         self.page.update()
 
     def setup_navigation(self):
@@ -79,7 +91,7 @@ class App:
             self.page.update()
 
         self.page.on_route_change = route_change
-        self.page.go("/")  # Define the initial route
+        self.page.go("/pedido")  # Define the initial route
 
 if __name__ == '__main__':
     ft.app(target=App, assets_dir='assets')
