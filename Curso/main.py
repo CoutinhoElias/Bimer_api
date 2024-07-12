@@ -5,7 +5,7 @@ from partials.navigation_drawer import MyNavigationDrawer
 from partials.app_bar import MyAppBar
 from views.home_view import HomeView
 from views.store_view import StoreView
-from views.pedido_view import PedidoView
+from views.pedido_view_local import PedidoView
 
 # ===========================================================================================================
 

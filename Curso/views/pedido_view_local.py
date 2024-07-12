@@ -4,8 +4,19 @@ from datetime import datetime
 
 from partials.data_table import create_datatable, my_table
 from partials.button import MyButton
-from querys.qry_pedidos import PedidosDeCompra
+from querys.qry_pedidos_local import PedidosDeCompra
 from querys.qry_fornecedor import Fornecedor
+
+import sys
+import os
+from datetime import datetime, timedelta
+import json
+from pprint import pprint
+
+# Adicionar o diretório "Curso" ao sys.path
+# sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from configs.settings import *
 
 # Encontrar uma maneira de criar tabela com linha em branco
 # self.add_datatable_itens('', '', '', '', 'NENHUM ITEM LISTADO', 'REDEFINA SEU FILTRO', selecionado=False)
@@ -19,6 +30,8 @@ class PedidoView:
         self.tb_tabela = ft.Ref[ft.DataTable]()
         self.tb_tabela_itens_pedido = ft.Ref[ft.DataTable]()
         self.tb_tab_pedido = ft.Ref[ft.Tab]()
+
+        self.pedidos_json = {}
 
         # ============================================================================================================================= 
         # Jogue aqui seus estilos:
@@ -136,6 +149,16 @@ class PedidoView:
         self.table_order_items = my_table(self.datatable_itens_pedido)
         # ---------------------------------------------------------------------------------------------------------------------------------------
 
+    def get_first_and_last_day_of_month(self, date):
+        # Obter o primeiro dia do mês
+        first_day = date.replace(day=1)
+        
+        # Obter o último dia do mês
+        next_month = first_day.replace(month=first_day.month % 12 + 1, day=1)
+        last_day = next_month - timedelta(days=1)
+        
+        return first_day, last_day
+
     def handle_date_change_start(self, e):
         # self.pg_codigo_chamada.focus()
         self.txt_pick_date_start.value = e.control.value.strftime('%d/%m/%Y')
@@ -157,7 +180,25 @@ class PedidoView:
         self.page.update()
 
     def filtrar_clicked(self, e):
-        self.pesquisa_pedidos()
+        # Data de hoje
+        today = datetime.today()
+
+        # Obter o primeiro e último dia do mês atual
+        first_day, last_day = self.get_first_and_last_day_of_month(today)
+
+        # Formatar as datas para exibição
+        first_day_formatted = first_day.strftime('%d/%m/%Y')
+        last_day_formatted = last_day.strftime('%d/%m/%Y')
+
+        if self.txt_pick_date_start.value == '':
+            self.txt_pick_date_start.value = first_day_formatted
+            self.txt_pick_date_start.update()
+
+        if self.txt_pick_date_end.value == '':
+            self.txt_pick_date_end.value = last_day_formatted
+            self.txt_pick_date_end.update()
+
+        self.pedidos_json = self.pesquisa_pedidos()
         self.datatable.rows = []
         # print("Cancel clicked")
 
@@ -275,13 +316,49 @@ class PedidoView:
         # Converte o objeto datetime para uma string no formato YYYY-MM-DD
         data_fim = data_fim_obj.strftime('%Y-%m-%d')        
 
-        pedido_de_compra = PedidosDeCompra(cd_empresa=self.pg_dd_codigo_empresa.value, codigo_crm=self.pg_codigo_chamada.value, id_fornecedor=self.id_fornecedor, status=self.pg_dd_status_pedido.value, dt_emissao_ini=data_ini, dt_emissao_fim=data_fim)
+        try:
+            db_handler = PedidosDeCompra(
+                connection_string=connection_string,
+                cd_empresa=self.pg_dd_codigo_empresa.value,
+                codigo_crm=self.pg_codigo_chamada.value,
+                id_fornecedor=self.id_fornecedor,
+                status=self.pg_dd_status_pedido.value,
+                dt_emissao_ini=data_ini,
+                dt_emissao_fim=data_fim
+            )
+            pedidos_de_compras = db_handler.get_all_pedidos_de_compras_filtered()
+        except Exception as e:
+            print(f"Erro ao buscar pedidos: {e}")
+            return {}
 
-        # Obtenha o DataFrame dos pedidos de compra:
-        df_pedidos = pedido_de_compra.obter_dataframe_pedidos_de_compra()
+        pedidos_dict = {
+            pedido.CdChamada: {
+                "CdChamada": pedido.CdChamada,
+                "IdPedidoDeCompra": pedido.IdPedidoDeCompra,
+                "StPedidoDeCompra": pedido.StPedidoDeCompra,
+                "DtEmissao": pedido.DtEmissao,
+                "DtEntrega": pedido.DtEntrega,
+                "DsPedidoDeCompra": pedido.DsPedidoDeCompra,
+                "DsObservacao": pedido.DsObservacao,
+                "Selecionado": False
+            }
+            for pedido in pedidos_de_compras
+        }
 
-        for index, row in df_pedidos.iterrows():
-            self.add_datatable_itens(row['Codigo'], row['Status'], row['DataEmissao'], row['DataEntrega'], row['Descricao'], row['Observacao'], selecionado=False)
+        for pedido in pedidos_dict.values():
+            self.add_datatable_itens(
+                pedido["CdChamada"], 
+                pedido["StPedidoDeCompra"], 
+                pedido["DtEmissao"], 
+                pedido["DtEntrega"], 
+                pedido["DsPedidoDeCompra"], 
+                pedido["DsObservacao"], 
+                selecionado=pedido["Selecionado"]
+            )
+
+        pprint(pedidos_dict)
+        return pedidos_dict
+
 
     def get_content(self):
 
