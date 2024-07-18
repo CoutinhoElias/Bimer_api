@@ -5,6 +5,8 @@ from datetime import datetime
 from partials.data_table import create_datatable, my_table
 from partials.button import MyButton
 from querys.qry_pedidos_local import PedidosDeCompra
+from querys.qry_pedidos_itens import PedidosDeCompraItens
+from querys.qry_produto import Produto
 from querys.qry_fornecedor import Fornecedor
 
 import sys
@@ -138,13 +140,13 @@ class PedidoView:
         self.campos_pedido_itens = [
             ft.DataColumn(ft.Text("Código", width=50), on_sort=lambda e: print(f"{e.column_index}, {e.ascending}"),),
             ft.DataColumn(ft.Text("Descricao", width=420), on_sort=lambda e: print(f"{e.column_index}, {e.ascending}"),),
-            ft.DataColumn(ft.Text("NCM", width=40), on_sort=lambda e: print(f"{e.column_index}, {e.ascending}"),),
-            ft.DataColumn(ft.Text("Quantidade", width=80), on_sort=lambda e: print(f"{e.column_index}, {e.ascending}"),),
-            ft.DataColumn(ft.Text("Vl. Unit.", width=80)),
+            ft.DataColumn(ft.Text("Quantidade", width=80),  numeric=True, on_sort=lambda e: print(f"{e.column_index}, {e.ascending}"),),
+            ft.DataColumn(ft.Text("Vl. Unit.", width=80),  numeric=True),
             ft.DataColumn(ft.Text("IPI", width=50), numeric=True,  on_sort=lambda e: print(f"{e.column_index}, {e.ascending}"),), 
             ft.DataColumn(ft.Text("ICMS", width=50), numeric=True,  on_sort=lambda e: print(f"{e.column_index}, {e.ascending}"),), 
-            ft.DataColumn(ft.Text("Vl. Total", width=80)),
+            ft.DataColumn(ft.Text("Vl. Total", width=80),  numeric=True,),
         ]
+
         self.datatable_itens_pedido = create_datatable(self.tb_tabela_itens_pedido, self.campos_pedido_itens)
         self.table_order_items = my_table(self.datatable_itens_pedido)
         # ---------------------------------------------------------------------------------------------------------------------------------------
@@ -166,7 +168,6 @@ class PedidoView:
 
     def handle_date_change_end(self, e):
         self.txt_pick_date_end.value = e.control.value.strftime('%d/%m/%Y')
-        # self.pesquisa_pedidos()
         self.page.update()
 
     def handle_change_cd_crm(self, e):
@@ -200,7 +201,6 @@ class PedidoView:
 
         self.pedidos_json = self.pesquisa_pedidos()
         self.datatable.rows = []
-        # print("Cancel clicked")
 
     def create_date_picker(self):
         
@@ -235,11 +235,31 @@ class PedidoView:
 
         if e.control.selected:
             if self.tb_tabela.current:
-                selected_row = e.control  # Pega a linha selecionada diretamente do evento
-                selected_cell_value = selected_row.cells[0].content.value
-                print(selected_cell_value)
+                selected_row = e.control  # Pega a linha selecionada diretamente do evento.
+                selected_cell_value = selected_row.cells[0].content.value # Copia o código do pedido de compra.
+                # Troca a aba do controle TAB.
                 self.tb_tab_pedido.current.selected_index = 1
                 self.tb_tab_pedido.current.update()
+
+                # print(self.pedidos_json[selected_cell_value]['IdPedidoDeCompra'], '<<<======')
+                id_pedido_de_compra = self.pedidos_json[selected_cell_value]['IdPedidoDeCompra'] # Procura o ID do Pedido de compra no dicionário criado anteriormente.
+                itens_pedido_de_compra = PedidosDeCompraItens(id_pedido_de_compra=id_pedido_de_compra) # Seta a classe dos itens do pedido de compra, note que envio o IdPedidoDeCompra.
+
+                # Obtenha o DataFrame dos pedidos de compra:
+                df_itens_pedidos = itens_pedido_de_compra.obter_dataframe_pedido_de_compra_itens() # Captura da API os itens deste pedido de compra que eu cliquei (Como DataFrame do Pandas).
+
+                self.datatable_itens_pedido.rows = [] # Limpa a lista de produtos da tabela antes de adicionar a nova listagem.
+
+                # Percorro o DataFrame usando iterrows.
+                for index, row in df_itens_pedidos.iterrows():
+                    # Para cada linha do DataFrame adicione uma linha do DataTable de 'itens do pedido'.
+                    self.add_datatable_itens_pedido(id_produto=row['IdentificadorProduto'], 
+                                                    quantidade=row['QuantidadePedida'], 
+                                                    valor_unitario=row['ValorItem'], 
+                                                    valor_item=row['ValorUnitario'], 
+                                                    valor_icms=row['ValorIcms'], 
+                                                    valor_ipi=row['ValorIPI'], 
+                                                    selecionado=False)
         else:
             print('Deselected')
 
@@ -249,39 +269,80 @@ class PedidoView:
 
     #TABELA DE PEDIDOS
     def add_datatable_itens(self, codigo, status, data_emissao, data_entrega, descricao, observacao, selecionado=False):
+        # Adiciona uma nova linha à DataTable 'self.datatable'
         self.datatable.rows.append(
             ft.DataRow(
                 [
+                    # Adiciona uma célula com o valor 'codigo'
                     ft.DataCell(ft.Text(value=codigo)),
+                    
+                    # Adiciona uma célula com o valor 'status'
                     ft.DataCell(ft.Text(status)),
+                    
+                    # Adiciona uma célula com o valor 'data_emissao'
                     ft.DataCell(ft.Text(data_emissao)),
+                    
+                    # Adiciona uma célula com o valor 'data_entrega'
                     ft.DataCell(ft.Text(data_entrega)),
+                    
+                    # Adiciona uma célula com o valor 'descricao'
                     ft.DataCell(ft.Text(descricao)),
+                    
+                    # Adiciona uma célula com o valor 'observacao' e alinha o texto à esquerda
                     ft.DataCell(ft.Text(observacao, text_align="LEFT")),
                 ],
+                # Define se a linha está selecionada ou não
                 selected=selecionado,
+                
+                # Define o manipulador de eventos para mudança de seleção da linha
                 on_select_changed = self.change_select,
             )
         )
+        # Atualiza a DataTable para refletir as mudanças
         self.datatable.update()
         # self.page.banner.content.controls[0].controls[1].controls[1].update()
 
     # TABELA DE ITESN DO PEDIDO
-    def add_datatable_itens_pedido(self, codigo, status, data_emissao, data_entrega, descricao, observacao, selecionado=False):
+    def add_datatable_itens_pedido(self, id_produto, quantidade, valor_unitario, valor_item, valor_icms, valor_ipi, selecionado=False):
+        # Cria uma instância da classe Produto para obter detalhes do produto com base no id_produto
+        dados_produto = Produto(id_produto)
+        
+        # Consulta o código e a descrição do produto usando a API
+        codigo, descricao = dados_produto.consultar_produto_codigo_api()
+
+        # Adiciona uma nova linha à DataTable 'self.datatable_itens_pedido'
         self.datatable_itens_pedido.rows.append(
             ft.DataRow(
                 [
+                    # Adiciona uma célula com o valor 'codigo' do produto
                     ft.DataCell(ft.Text(value=codigo)),
-                    ft.DataCell(ft.Text(status)),
-                    ft.DataCell(ft.Text(data_emissao)),
-                    ft.DataCell(ft.Text(data_entrega)),
+                    
+                    # Adiciona uma célula com a 'descricao' do produto
                     ft.DataCell(ft.Text(descricao)),
-                    ft.DataCell(ft.Text(observacao)),
+                    
+                    # Adiciona uma célula com a 'quantidade' pedida
+                    ft.DataCell(ft.Text(quantidade)),
+                    
+                    # Adiciona uma célula com o 'valor_item'
+                    ft.DataCell(ft.Text(valor_item)),
+                    
+                    # Adiciona uma célula com o 'valor_ipi' do produto
+                    ft.DataCell(ft.Text(valor_ipi)),
+                    
+                    # Adiciona uma célula com o 'valor_icms' do produto
+                    ft.DataCell(ft.Text(valor_icms)),
+                    
+                    # Adiciona uma célula com o 'valor_unitario' do produto
+                    ft.DataCell(ft.Text(valor_unitario)),
                 ],
+                # Define se a linha está selecionada ou não
                 selected=selecionado,
-                on_select_changed = self.change_select,
+                
+                # Define o manipulador de eventos para mudança de seleção da linha
+                on_select_changed=self.change_select,
             )
         )
+        # Atualiza a DataTable para refletir as mudanças
         self.datatable_itens_pedido.update()
         # self.page.banner.content.controls[0].controls[1].controls[1].update()
     # ---------------------------------------------------------------------------------------------------------------------------------------
@@ -301,22 +362,20 @@ class PedidoView:
         self.pg_nome_fornecedor.update()
 
     def pesquisa_pedidos(self):
-        # Crie uma instância da classe, passando os parâmetros da consulta:
+        # Obtenha a data inicial do campo de texto e converta para objeto datetime
         data_ini = self.txt_pick_date_start.value                
-        # Converte a string para um objeto datetime
         data_ini_obj = datetime.strptime(data_ini, '%d/%m/%Y')
 
-        # Crie uma instância da classe, passando os parâmetros da consulta:
+        # Obtenha a data final do campo de texto e converta para objeto datetime
         data_fim = self.txt_pick_date_end.value                
-        # Converte a string para um objeto datetime
         data_fim_obj = datetime.strptime(data_fim, '%d/%m/%Y')        
 
-        # Converte o objeto datetime para uma string no formato YYYY-MM-DD
+        # Converta os objetos datetime para strings no formato YYYY-MM-DD
         data_ini = data_ini_obj.strftime('%Y-%m-%d')
-        # Converte o objeto datetime para uma string no formato YYYY-MM-DD
         data_fim = data_fim_obj.strftime('%Y-%m-%d')        
 
         try:
+            # Crie uma instância da classe PedidosDeCompra com os parâmetros fornecidos
             db_handler = PedidosDeCompra(
                 connection_string=connection_string,
                 cd_empresa=self.pg_dd_codigo_empresa.value,
@@ -326,11 +385,16 @@ class PedidoView:
                 dt_emissao_ini=data_ini,
                 dt_emissao_fim=data_fim
             )
+            
+            # Obtenha os pedidos de compra filtrados
             pedidos_de_compras = db_handler.get_all_pedidos_de_compras_filtered()
+        
         except Exception as e:
+            # Captura e imprime qualquer erro ocorrido durante a busca dos pedidos
             print(f"Erro ao buscar pedidos: {e}")
             return {}
 
+        # Construa um dicionário com os detalhes dos pedidos de compra
         pedidos_dict = {
             pedido.CdChamada: {
                 "CdChamada": pedido.CdChamada,
@@ -345,6 +409,7 @@ class PedidoView:
             for pedido in pedidos_de_compras
         }
 
+        # Adicione cada pedido à DataTable
         for pedido in pedidos_dict.values():
             self.add_datatable_itens(
                 pedido["CdChamada"], 
@@ -356,95 +421,98 @@ class PedidoView:
                 selecionado=pedido["Selecionado"]
             )
 
-        pprint(pedidos_dict)
+        # Retorne o dicionário com os pedidos
         return pedidos_dict
 
-
     def get_content(self):
-
+        # Criação de uma linha responsiva contendo os campos de código da empresa, status do pedido, código de chamada e nome do fornecedor
         empresa_codigo_fornecedor = ft.ResponsiveRow(
             columns=12,
             controls=[self.pg_dd_codigo_empresa, self.pg_dd_status_pedido, self.pg_codigo_chamada, self.pg_nome_fornecedor],
         )
 
+        # Botão de ícone para selecionar a data inicial
         btn_pick_date_start = ft.IconButton(
-                    icon=ft.icons.DATE_RANGE,
-                    icon_color="blue400",
-                    icon_size=30,
-                    tooltip="Data Inicial.",
-                    col={"md": .6},
-                    style=self.button_style,
-                    on_click=lambda e: self.page.open(self.create_date_picker()), 
-                )
+            icon=ft.icons.DATE_RANGE,
+            icon_color="blue400",
+            icon_size=30,
+            tooltip="Data Inicial.",
+            col={"md": .6},
+            style=self.button_style,
+            on_click=lambda e: self.page.open(self.create_date_picker()), 
+        )
 
+        # Botão de ícone para selecionar a data final
         btn_pick_date_end = ft.IconButton(
-                    icon=ft.icons.DATE_RANGE,
-                    icon_color="blue400",
-                    icon_size=30,
-                    tooltip="Data Inicial.",
-                    col={"md": .6},
-                    style=self.button_style,
-                    on_click=lambda e: self.page.open(self.create_date_picker_end()),
-                )
+            icon=ft.icons.DATE_RANGE,
+            icon_color="blue400",
+            icon_size=30,
+            tooltip="Data Final.",
+            col={"md": .6},
+            style=self.button_style,
+            on_click=lambda e: self.page.open(self.create_date_picker_end()),
+        )
 
-        spacer = ft.Container(col={"md": .4},)  # Espaçador
+        # Espaçador para ajuste do layout
+        spacer = ft.Container(col={"md": .4})
 
-        # self.pesquisa_pedidos() / self.filtrar_clicked
+        # Botão personalizado para realizar a filtragem
         button = MyButton(text="Filtrar", on_click=self.filtrar_clicked)
 
+        # Linha responsiva contendo os campos de data e os botões de seleção de data
         datas_e_botoes = ft.ResponsiveRow(
             columns=12,
             spacing=0,
             controls=[self.txt_pick_date_start, btn_pick_date_start, spacer, self.txt_pick_date_end, btn_pick_date_end, button],
         )
 
+        # Criação de uma coluna contendo o layout principal com os controles e tabelas
         layout = ft.Column(
             controls=[empresa_codigo_fornecedor, datas_e_botoes, self.table_order],
             alignment=ft.alignment.center,
             expand=True
         )
 
+        # Criação das abas para navegação entre a lista de pedidos e os itens do pedido selecionado
         my_tab = ft.Tabs(
-                ref=self.tb_tab_pedido,
-                tabs=[
-                    ft.Tab(
-                        text='Lista de Pedidos',
-                        icon=ft.icons.TABLE_VIEW_OUTLINED,
-                        content=ft.Container(
-                                    expand=False,
-                                    padding=ft.padding.all(10),
-                                    content= layout,
-                                    # width=20,
-                                    # height=5,
-                                    # bgcolor=ft.colors.AMBER_100                
-                        ),
+            ref=self.tb_tab_pedido,
+            tabs=[
+                ft.Tab(
+                    text='Lista de Pedidos',
+                    icon=ft.icons.TABLE_VIEW_OUTLINED,
+                    content=ft.Container(
+                        expand=False,
+                        padding=ft.padding.all(10),
+                        content=layout,
+                        # width=20,
+                        # height=5,
+                        # bgcolor=ft.colors.AMBER_100                
                     ),
+                ),
+                ft.Tab(
+                    text='Itens do Pedido selecionado',
+                    icon=ft.icons.TABLE_ROWS_OUTLINED,
+                    content=ft.Container(
+                        expand=False,
+                        padding=ft.padding.all(10),
+                        content=ft.Column(
+                            expand=True,
+                            controls=[self.table_order_items],
+                            scroll=ft.ScrollMode.ALWAYS,  # Define a existência de um Scroll
+                            on_scroll_interval=0,  # Define o intervalo de exibição da Scroll
+                        ),                   
+                    )                
+                ),            
+            ],
+            selected_index=0,
+            indicator_tab_size=True,
+            label_color=ft.colors.GREEN,
+            # width=100, # Ajuste da Largura
+            height=850, # Ajuste da altura
+            # expand=1,
+            # on_change=lambda _: print(directory_path_or_file.value)
+        )
 
-                    ft.Tab(
-                        text='Itens do Pedido selecionado',
-                        icon=ft.icons.TABLE_ROWS_OUTLINED,
-                        content=ft.Container(
-                            expand=False,
-                            padding=ft.padding.all(10),
-                            content=ft.Column(
-                                expand=True,
-                                controls= 
-                                    [
-                                        self.table_order_items
-                                    ],
-                            scroll=ft.ScrollMode.ALWAYS, # Define a existência de um Scroll
-                            on_scroll_interval=0, # Define o intervalo de exibição da fo.Column o padrão é 100 milissegundos                         
-                            ),                   
-                        )                
-                    ),            
-                ],
-                selected_index = 0,
-                indicator_tab_size = True,
-                label_color=ft.colors.GREEN,
-                # width=100, # Ajuste da Largura
-                height=850, # Ajuste da altura
-                # expand=1,
-                # on_change=lambda _: print(directory_path_or_file.value)
-            )
-
+        # Retorna o objeto 'my_tab' contendo as abas configuradas
         return my_tab
+

@@ -1,31 +1,33 @@
 import flet as ft
 
-# Telas e partes
+# Importação de componentes customizados e views
 from partials.navigation_drawer import MyNavigationDrawer
 from partials.app_bar import MyAppBar
 from views.home_view import HomeView
 from views.store_view import StoreView
 from views.pedido_view_local import PedidoView
 
-# ===========================================================================================================
-
 class App:
     def __init__(self, page: ft.Page):
+        """Inicializa a aplicação com a configuração da página e navegação"""
         self.page = page
+        
+        # Configurações da página
         self.page.bgcolor = ft.colors.BLACK
         self.page.title = "Sistema SV em Flet"
-        self.page.theme_mode = "dark"
-        # self.page.theme_mode = ft.colors.BLACK
-        self.page.window_center()
+        self.page.theme_mode = "dark"  # Define o tema como escuro
+        self.page.window_center()  # Centraliza a janela na tela
 
+        # Define as dimensões da janela
         page.window_width = 1465
         page.window_height = 999        
 
+        # Define a animação de transição de páginas
         self.page.theme = ft.Theme(page_transitions={
             'windows': ft.PageTransitionTheme.CUPERTINO
         })
 
-        # Configuração do idioma
+        # Configuração do idioma da aplicação
         self.page.locale_configuration = ft.LocaleConfiguration(
             supported_locales=[
                 ft.Locale("pt", "BR"),  # Português, Brasil
@@ -36,12 +38,13 @@ class App:
             current_locale=ft.Locale("pt", "BR"),  # Define o idioma inicial como Português do Brasil
         )
 
-        self.setup_navigation()
-        # current_locale = App.locale_service.get_locale()
-        self.page.update()
+        self.setup_navigation()  # Configura a navegação
+        self.page.update()  # Atualiza a página
 
     def setup_navigation(self):
+        """Configura a navegação da aplicação"""
         def indicador_de_tela(e):
+            """Atualiza a rota da aplicação com base no item do menu selecionado"""
             menu_selecionado = e.control.selected_index
             match menu_selecionado:
                 case 0:
@@ -53,13 +56,16 @@ class App:
                 case _:
                     self.page.go("/")
 
+        # Define o drawer de navegação e seu comportamento ao mudar a seleção
         self.page.drawer = MyNavigationDrawer(on_change=indicador_de_tela)
 
         def route_change(event):
+            """Atualiza a view da aplicação com base na rota"""
             route = event.route
             print(f"Route changed to: {route}")
-            self.page.views.clear()
+            self.page.views.clear()  # Limpa as views atuais
 
+            # Define a view e a app bar com base na rota
             match route:
                 case "/":
                     view = HomeView().get_content()
@@ -78,6 +84,7 @@ class App:
                     app_bar_title = "Pagina Principal"
                     app_bar_color = ft.colors.GREY_800
 
+            # Adiciona a nova view com a app bar e o drawer
             self.page.views.append(
                 ft.View(
                     route,
@@ -88,10 +95,11 @@ class App:
                     ]
                 )
             )
-            self.page.update()
+            self.page.update()  # Atualiza a página
 
-        self.page.on_route_change = route_change
-        self.page.go("/pedido")  # Define the initial route
+        self.page.on_route_change = route_change  # Define o callback para mudanças de rota
+        self.page.go("/pedido")  # Define a rota inicial
 
 if __name__ == '__main__':
+    # Inicializa a aplicação Flet com a classe App como alvo e o diretório de assets
     ft.app(target=App, assets_dir='assets')
