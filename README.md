@@ -13,6 +13,7 @@ O Bimer_api facilita a integração com a API Bimer da Alterdata, automatizando 
 
 * Linguagem de Programação: Python 3.12.3
 * Framework: Flet 0.23.1
+* PyMSSQL: pymssql (pip3 install pymssql) para acesso direto ao SQL Server.
 
 ## ![](https://github.com/CoutinhoElias/Bimer_api/blob/main/image.png)
 
