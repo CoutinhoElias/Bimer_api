@@ -1,16 +1,18 @@
-# Bimer_api
-Sistema de Acesso a API Bimer
+# Bimer_api: Sistema de Integração com API Bimer
 
+O Bimer_api facilita a integração com a API Bimer da Alterdata, automatizando a busca e edição de pedidos de compra, otimizando seus processos e reduzindo o tempo de trabalho manual.
 
-Atualmente funcionando a integração com a API Bimer da Alterdata, buscando pedidos de Compra.  
-O Intuito é através da API Bimer fazer edição destes pedidos.  
-O código não funcionará se você não possuir uma API Bimer instalada e as credenciais definidas.  
-Atualmente a credencial que você verá no código é de um computador local, ou seja, não está liberado na internet.
+## Funcionalidades
 
-# Tecnologias embarcadas:
-*Python 3.12.3
-*Flet 0.23.1
+* Buscar pedidos por diversos critérios (ID, data, cliente, etc.).
+* Editar detalhes dos pedidos (status, data de entrega, itens).
+* Cancelar pedidos.
+* Consultar histórico de alterações nos pedidos.
 
+## Tecnologias
 
-![](https://github.com/CoutinhoElias/Bimer_api/blob/main/image.png)
+* Linguagem de Programação: Python 3.12.3
+* Framework: Flet 0.23.1
+
+## ![](https://github.com/CoutinhoElias/Bimer_api/blob/main/image.png)
 
