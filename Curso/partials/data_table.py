@@ -28,7 +28,6 @@ def create_datatable(ref=None, campos=None):
         columns=campos,
         rows=[],
     )
-    
     # Return the DataTable instance
     return data_table
 

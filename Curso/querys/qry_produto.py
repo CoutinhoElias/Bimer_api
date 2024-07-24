@@ -9,9 +9,9 @@ from urllib.parse import quote  # Para codificar URLs
 from pprint import pprint  # Para impressão de dados formatados
 
 class Produto:
-    def __init__(self, id_produto):
-        """Inicializa a classe Produto com o ID do produto"""
-        self.id_produto = id_produto
+    # def __init__(self, id_produto):
+    #     """Inicializa a classe Produto com o ID do produto"""
+    #     self.id_produto = id_produto
 
     def _obter_token(self):
         """Obtém um token de autenticação via API"""
@@ -46,11 +46,11 @@ class Produto:
         
         # Retorna o token de acesso
         return data['access_token']
-    
-    def consultar_produto_codigo_api(self):
+
+    def consultar_produto_codigo_api(self, id_produto):
         """Consulta a API para obter informações do produto pelo seu código"""
         # URL do endpoint da API para consultar o produto
-        url = f"http://192.168.254.1:8091/api/produtos/{self.id_produto}"
+        url = f"http://192.168.254.1:8091/api/produtos/{id_produto}"
         
         # Obtém o token de autenticação
         token = self._obter_token()
@@ -73,12 +73,16 @@ class Produto:
         # Carrega a resposta JSON em um dicionário
         data = json.loads(response.text)
 
+        # print('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
+        # pprint(data)
+
         # Verifica se não há erros na resposta da API
         if data['Erros'] == []:
             # Retorna o código e o nome do produto
-            return data['ListaObjetos'][0]['Codigo'], data['ListaObjetos'][0]['Nome']
+            return data['ListaObjetos'][0]['Identificador'], data['ListaObjetos'][0]['Codigo'], data['ListaObjetos'][0]['Nome']
         else:
             # Imprime uma mensagem se o produto não for encontrado
             print('Não encontrei seu produto!')
             # Retorna valores vazios
-            return '', ''
+            return '', '', ''
+        

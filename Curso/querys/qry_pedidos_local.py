@@ -95,22 +95,3 @@ class PedidosDeCompra:
             print(f'Erro ao deletar pedido de compra: {e}')
         finally:
             session.close()  # Fecha a sessão
-
-# Exemplo de uso
-# if __name__ == '__main__':
-#     connection_string = 'mssql+pymssql://seu_pedidos_de_compra:sua_senha@seu_servidor/seu_banco_de_dados'
-#     db_handler = PedidosDeCompra(connection_string, cd_empresa='01', codigo_crm='CRM123', id_fornecedor='Fornecedor01', status='A', dt_emissao_ini='2023-01-01', dt_emissao_fim='2023-12-31')
-
-#     # Create
-#     db_handler.add_pedidos_de_compra(nome='Elias', email='elias@exemplo.com')
-
-#     # Read
-#     pedidos_de_compras = db_handler.get_all_pedidos_de_compras()
-#     for pedidos_de_compra in pedidos_de_compras:
-#         print(pedidos_de_compra.CdCEP, pedidos_de_compra.DsObservacao)
-
-#     # Update
-#     db_handler.update_pedidos_de_compra_email(nome='Elias', novo_email='novoemail@exemplo.com')
-
-#     # Delete
-#     db_handler.delete_pedidos_de_compra(nome='Elias')

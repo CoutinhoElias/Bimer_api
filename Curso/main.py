@@ -16,11 +16,11 @@ class App:
         self.page.bgcolor = ft.colors.BLACK
         self.page.title = "Sistema SV em Flet"
         self.page.theme_mode = "dark"  # Define o tema como escuro
-        self.page.window_center()  # Centraliza a janela na tela
+        self.page.window.center()  # Centraliza a janela na tela
 
         # Define as dimensões da janela
-        page.window_width = 1465
-        page.window_height = 999        
+        page.window.width = 1465
+        page.window.height = 999        
 
         # Define a animação de transição de páginas
         self.page.theme = ft.Theme(page_transitions={
