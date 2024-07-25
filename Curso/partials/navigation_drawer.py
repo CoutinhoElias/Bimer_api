@@ -12,7 +12,8 @@ class MyNavigationDrawer(ft.NavigationDrawer):
             ft.Container(height=12),  # Ajuda a manter a distancia dos menus na vertical
 
             ft.Image(
-                src="C:\\Users\\SV\\Desktop\\SV-2.png",
+                src= "images\logo_sv.jpg", #"C:\\Users\\SV\\Desktop\\Logos fundo branco\\logo_sv.jpg"
+                
                 width=200,
                 height=200,
                 fit=ft.ImageFit.NONE,

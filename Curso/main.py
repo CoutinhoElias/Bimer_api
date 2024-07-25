@@ -4,6 +4,7 @@ import flet as ft
 from partials.navigation_drawer import MyNavigationDrawer
 from partials.app_bar import MyAppBar
 from views.home_view import HomeView
+from views.login import Cadastrar, Login
 from views.store_view import StoreView
 from views.pedido_view_local import PedidoView
 
@@ -52,7 +53,11 @@ class App:
                 case 1:
                     self.page.go("/store")
                 case 2:
-                    self.page.go("/pedido")                    
+                    self.page.go("/pedido") 
+                case 3:
+                    self.page.go("/login")
+                case 4:
+                    self.page.go("/login/novo") 
                 case _:
                     self.page.go("/")
 
@@ -78,7 +83,15 @@ class App:
                 case "/pedido":
                     view = PedidoView(self.page).get_content()
                     app_bar_title = "Pedido de Compra"  
-                    app_bar_color = ft.colors.GREY_800                  
+                    app_bar_color = ft.colors.GREY_800  
+                case "/login":
+                    view = Login(self.page).get_content()
+                    app_bar_title = "Login"  
+                    app_bar_color = ft.colors.GREY_800  
+                case "/login/novo":
+                    view = Cadastrar(self.page) #.get_content()
+                    app_bar_title = "Novo Login"  
+                    app_bar_color = ft.colors.GREY_800 
                 case _:
                     view = HomeView().get_content()
                     app_bar_title = "Pagina Principal"
@@ -98,7 +111,8 @@ class App:
             self.page.update()  # Atualiza a página
 
         self.page.on_route_change = route_change  # Define o callback para mudanças de rota
-        self.page.go("/pedido")  # Define a rota inicial
+        self.page.go("/login")  # Define a rota inicial
+        
 
 if __name__ == '__main__':
     # Inicializa a aplicação Flet com a classe App como alvo e o diretório de assets
