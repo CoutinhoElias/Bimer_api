@@ -76,36 +76,45 @@ class App:
                     view = HomeView().get_content()
                     app_bar_title = "Pagina Principal"
                     app_bar_color = ft.colors.GREY_800
+                    include_drawer = True
                 case "/store":
                     view = StoreView().get_content()
                     app_bar_title = "Store"
                     app_bar_color = ft.colors.GREY_800
+                    include_drawer = True
                 case "/pedido":
                     view = PedidoView(self.page).get_content()
                     app_bar_title = "Pedido de Compra"  
                     app_bar_color = ft.colors.GREY_800  
+                    include_drawer = True
                 case "/login":
                     view = Login(self.page).get_content()
                     app_bar_title = "Login"  
                     app_bar_color = ft.colors.GREY_800  
+                    include_drawer = False
                 case "/login/novo":
-                    view = Cadastrar(self.page) #.get_content()
+                    view = Cadastrar(self.page).get_content()
                     app_bar_title = "Novo Login"  
                     app_bar_color = ft.colors.GREY_800 
+                    include_drawer = False
                 case _:
                     view = HomeView().get_content()
                     app_bar_title = "Pagina Principal"
                     app_bar_color = ft.colors.GREY_800
+                    include_drawer = True
 
-            # Adiciona a nova view com a app bar e o drawer
+            # Adiciona a nova view com a app bar e o drawer (condicionalmente)
+            new_view_content = [
+                MyAppBar(app_bar_title, app_bar_color),
+                view
+            ]
+            if include_drawer:
+                new_view_content.insert(0, self.page.drawer)
+
             self.page.views.append(
                 ft.View(
                     route,
-                    [
-                        self.page.drawer,
-                        MyAppBar(app_bar_title, app_bar_color),
-                        view
-                    ]
+                    new_view_content
                 )
             )
             self.page.update()  # Atualiza a página

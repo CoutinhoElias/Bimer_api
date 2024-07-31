@@ -1,222 +1,7 @@
 import flet as ft
 from partials.button import MyButton
-
-class Cadastrar(ft.Row):
-
-    def __init__(self, page: ft.Page):
-        super().__init__()
-
-        self.texto_tem_conta = ft.TextButton(text='já tem uma conta?', on_click=lambda e: page.go('/login'))
-
-        self.cadastrar_conta = ft.Container(
-                                    margin=ft.margin.only(top=20), 
-                                    width=250, 
-                                    height=40, 
-                                    bgcolor=ft.colors.GREEN, 
-                                    border_radius=20,
-                                    alignment=ft.alignment.center,
-                                    content=ft.Text(
-                                                'Login3', 
-                                                weight=ft.FontWeight.BOLD,
-                                                color=ft.colors.BLACK
-                                            ), 
-                                    on_click=lambda x: print('apertei aqui')
-                                )
-        
-        self.usuario = ft.Container(
-                            margin=ft.margin.only(top=20),
-                            content=ft.TextField(
-                                        focused_border_color=ft.colors.RED,
-                                        hint_text='Digite seu Nome', 
-                                        label='Nome', 
-                                        width=250,
-                                        hint_style=ft.TextStyle(
-                                            font_family="Arial",
-                                            color=ft.colors.BLACK,
-                                            # weight="bold"
-                                        ),
-                                        label_style=ft.TextStyle(
-                                            font_family="Arial",
-                                            color=ft.colors.BLACK,
-                                            # weight="bold"
-                                        ),
-                                        color=ft.colors.BLACK,
-                                    )
-                        )
-        
-        self.login_usuario = ft.Container(
-                                margin=ft.margin.only(top=10),
-                                content=ft.TextField(
-                                            focused_border_color=ft.colors.RED,
-                                            hint_text='Digite seu email', 
-                                            label='Email', 
-                                            width=250,
-                                            hint_style=ft.TextStyle(
-                                                font_family="Arial",
-                                                color=ft.colors.BLACK,
-                                                # weight="bold"
-                                            ),
-                                            label_style=ft.TextStyle(
-                                                font_family="Arial",
-                                                color=ft.colors.BLACK,
-                                                # weight="bold"
-                                            ),
-                                            color=ft.colors.BLACK,
-                                        )
-                            )
-        
-        self.senha_usuario = ft.Container(
-                                margin=ft.margin.only(top=10),
-                                content=ft.TextField(
-                                            focused_border_color=ft.colors.RED,
-                                            hint_text='Digite sua senha', 
-                                            label='Senha', 
-                                            width=250, 
-                                            can_reveal_password=True, 
-                                            password=True,
-                                            hint_style=ft.TextStyle(
-                                                font_family="Arial",
-                                                color=ft.colors.BLACK,
-                                                # weight="bold"
-                                            ),
-                                            label_style=ft.TextStyle(
-                                                font_family="Arial",
-                                                color=ft.colors.BLACK,
-                                                # weight="bold"
-                                            ),
-                                            color=ft.colors.BLACK,
-                                        )
-                            )
-        
-        self.confirm_senha = ft.Container(
-                                margin=ft.margin.only(top=10),
-                                content=ft.TextField(
-                                            focused_border_color=ft.colors.RED,
-                                            hint_text='Digite sua senha novamente', 
-                                            label='Confirmar Senha', 
-                                            width=250, 
-                                            can_reveal_password=True, 
-                                            password=True,
-                                            hint_style=ft.TextStyle(
-                                                font_family="Arial",
-                                                color=ft.colors.BLACK,
-                                                # weight="bold"
-                                            ),
-                                            label_style=ft.TextStyle(
-                                                font_family="Arial",
-                                                color=ft.colors.BLACK,
-                                                # weight="bold"
-                                            ),
-                                            color=ft.colors.BLACK,
-                                        )
-                            )
-        
-        self.chave_privada = ft.Container(
-                                margin=ft.margin.only(top=10),
-                                content=ft.TextField(
-                                            focused_border_color=ft.colors.RED,
-                                            hint_text='Digite sua chave privada metamask/trust wallet', 
-                                            label='Chave Privada', 
-                                            width=250, 
-                                            can_reveal_password=True, 
-                                            password=True,
-                                            hint_style=ft.TextStyle(
-                                                font_family="Arial",
-                                                color=ft.colors.BLACK,
-                                                # weight="bold"
-                                            ),
-                                            label_style=ft.TextStyle(
-                                                font_family="Arial",
-                                                color=ft.colors.BLACK,
-                                                # weight="bold"
-                                            ),
-                                            color=ft.colors.BLACK,
-                                        )
-                            )
-        
-        self.wallet = ft.Container(
-                            margin=ft.margin.only(top=10),
-                            content=ft.TextField(
-                                        focused_border_color=ft.colors.RED,
-                                        hint_text='Digite sua wallet', 
-                                        label='Wallet', 
-                                        width=250,
-                                        hint_style=ft.TextStyle(
-                                            font_family="Arial",
-                                            color=ft.colors.BLACK,
-                                            # weight="bold"
-                                        ),
-                                        label_style=ft.TextStyle(
-                                            font_family="Arial",
-                                            color=ft.colors.BLACK,
-                                            # weight="bold"
-                                        ),
-                                        color=ft.colors.BLACK,
-                                    )
-                        )
-
-        self.alignment = ft.MainAxisAlignment.SPACE_BETWEEN
-
-        self.controls = [
-                ft.Container(
-                    width=500, 
-                    height=700, 
-                    padding=ft.padding.symmetric(vertical=30, horizontal=40),
-                    content=ft.Container(
-                                bgcolor=ft.colors.GREY_100, 
-                                border_radius=30, 
-                                shadow=ft.BoxShadow(
-                                            blur_radius=30, 
-                                            color=ft.colors.RED, 
-                                            blur_style=ft.ShadowBlurStyle.OUTER
-                                        ),
-                                content=ft.Column(
-                                            horizontal_alignment=ft.CrossAxisAlignment.CENTER, 
-                                            controls=[
-                                                ft.Container(
-                                                    alignment=ft.alignment.
-                                                    center, padding=ft.padding.only(top=20),
-                                                    content=ft.Text(
-                                                                value='Registre-se', 
-                                                                text_align=ft.TextAlign.CENTER,
-                                                                style=ft.TextStyle(
-                                                                            size=30, 
-                                                                            weight=ft.FontWeight.BOLD,
-                                                                            color=ft.colors.BLACK
-                                                                        )
-                                                            )
-                                                ),
-                                                self.usuario,
-                                                self.login_usuario,
-                                                self.senha_usuario,
-                                                self.confirm_senha,
-                                                self.chave_privada,
-                                                self.wallet,
-                                                self.cadastrar_conta,
-                                                self.texto_tem_conta
-                                            ]
-                                        )
-                            )
-            ),
-
-            ft.Container(
-                width=910,
-                height=890,
-                content=ft.Image(
-                            src="images\login.jpg",
-                            fit=ft.ImageFit.COVER,
-                            # fit=ft.ImageFit.NONE,
-                            repeat=ft.ImageRepeat.NO_REPEAT,
-                            filter_quality=ft.FilterQuality.HIGH,
-                            border_radius=ft.border_radius.all(10),
-                            expand=True
-
-                        ),
-                padding=ft.padding.all(5),
-            )
-
-        ]
-
+from views.sign_up import Cadastrar
+from querys.login_json import user_credentials
 
 class Login(ft.Row):
 
@@ -225,120 +10,71 @@ class Login(ft.Row):
         super().__init__()
         self.page = page  # Certifique-se de armazenar a página na instância
 
+        # Campo responsivo.
+        self.email = ft.ResponsiveRow(
+            columns=12,
+            controls=[
+                ft.TextField(
+                    focused_border_color=ft.colors.RED,
+                    hint_text='Digite seu Login Bimer', 
+                    label='Login Bimer', 
+                    width=250,
+                    hint_style=ft.TextStyle(
+                        font_family="Arial",
+                        color=ft.colors.BLACK,
+                        # weight="bold"
+                    ),
+                    label_style=ft.TextStyle(
+                        font_family="Arial",
+                        color=ft.colors.BLACK,
+                        # weight="bold"
+                    ),
+                    color=ft.colors.BLACK,
+                    expand=True
+                )
+            ],
+        )
 
-        # self.login_conta = ft.Container(margin=ft.margin.only(top=20),
-        #                                 width=250,
-        #                                 height=40,
-        #                                 bgcolor=ft.colors.RED,
-        #                                 border_radius=20,
-        #                                 alignment=ft.alignment.center,
-        #                                 content=ft.Text(
-        #                                     'Login1', 
-        #                                     weight=ft.FontWeight.BOLD,
-        #                                     color=ft.colors.BLACK
-        #                                 ),
-        #                                 on_click=lambda x: print(
-        #                                     'apertei aqui')
-        #                                 )
-
-        # self.login_usuario = ft.Container(
-        #                         margin=ft.margin.only(top=50),
-        #                         content=ft.TextField(
-        #                                     focused_border_color=ft.colors.RED,
-        #                                     hint_text='Digite seu email', 
-        #                                     label='Email', 
-        #                                     width=250,
-        #                                     hint_style=ft.TextStyle(
-        #                                         font_family="Arial",
-        #                                         color=ft.colors.BLACK,
-        #                                         # weight="bold"
-        #                                     ),
-        #                                     label_style=ft.TextStyle(
-        #                                         font_family="Arial",
-        #                                         color=ft.colors.BLACK,
-        #                                         # weight="bold"
-        #                                     ),
-        #                                     color=ft.colors.BLACK,)
-        #                     )
-        # self.senha_usuario = ft.Container(margin=ft.margin.only(top=20), 
-        #                                         content=ft.TextField(
-        #                                                     focused_border_color=ft.colors.RED,
-        #                                                     hint_text='Digite sua senha', 
-        #                                                     label='Senha', 
-        #                                                     width=250, 
-        #                                                     can_reveal_password=True, 
-        #                                                     password=True,
-        #                                                     hint_style=ft.TextStyle(
-        #                                                         font_family="Arial",
-        #                                                         color=ft.colors.BLACK,
-        #                                                         # weight="bold"
-        #                                                     ),
-        #                                                     label_style=ft.TextStyle(
-        #                                                         font_family="Arial",
-        #                                                         color=ft.colors.BLACK,
-        #                                                         # weight="bold"
-        #                                                     ),
-        #                                                     color=ft.colors.BLACK,
-        #                                                 )
-        #                     )
-        # self.alignment = ft.MainAxisAlignment.SPACE_BETWEEN
-
-        # self.controls = [
-        #     ft.Container(
-        #         width=500,
-        #         height=700,
-        #         padding=ft.padding.symmetric(vertical=160, horizontal=40),
-        #         content=ft.Container(
-        #             bgcolor=ft.colors.GREY_100,
-        #             border_radius=30,
-        #             shadow=ft.BoxShadow(
-        #                 blur_radius=30,
-        #                 color=ft.colors.RED,
-        #                 blur_style=ft.ShadowBlurStyle.OUTER
-        #             ),
-        #             content=ft.Column(
-        #                 horizontal_alignment=ft.CrossAxisAlignment.CENTER, 
-        #                 controls=[
-        #                     ft.Container(
-        #                         alignment=ft.alignment.center, 
-        #                         # padding=ft.padding.all(10), # only(top=20),
-        #                         content=ft.Text(
-        #                             value='Login2',
-        #                             text_align=ft.TextAlign.CENTER,
-        #                             style=ft.TextStyle(
-        #                                         size=30, 
-        #                                         weight=ft.FontWeight.BOLD,
-        #                                         color=ft.colors.BLACK
-        #                                     )
-        #                         )
-        #                     ),
-        #                     self.login_usuario,
-        #                     self.senha_usuario,
-        #                     self.login_conta,
-        #                     self.texto_criar
-        #                 ]
-        #             )
-        #         )
-        #     ),
-        #     ft.Container(
-        #         width=910,
-        #         height=890,
-        #         content=ft.Image(
-        #                     src="images\login.jpg",
-        #                     fit=ft.ImageFit.COVER,
-        #                     # fit=ft.ImageFit.NONE,
-        #                     repeat=ft.ImageRepeat.NO_REPEAT,
-        #                     filter_quality=ft.FilterQuality.HIGH,
-        #                     border_radius=ft.border_radius.all(10),
-        #                     expand=True
-
-        #                 ),
-        #         padding=ft.padding.all(5),
-        #     )
-        # ]
+        # Campo responsivo.
+        self.password = ft.ResponsiveRow(
+            columns=12,
+            controls=[
+                ft.TextField(
+                    focused_border_color=ft.colors.RED,
+                    hint_text='Digite sua senha', 
+                    label='Password', 
+                    width=250,
+                    can_reveal_password=True, 
+                    password=True,                    
+                    hint_style=ft.TextStyle(
+                        font_family="Arial",
+                        color=ft.colors.BLACK,
+                        # weight="bold"
+                    ),
+                    label_style=ft.TextStyle(
+                        font_family="Arial",
+                        color=ft.colors.BLACK,
+                        # weight="bold"
+                    ),
+                    color=ft.colors.BLACK,
+                    expand=True
+                )
+            ],
+        )
 
     def logar_clicked(self, e):
-        print("Produto alterado com sucesso!")
+        # Obtenha os valores dos campos de texto
+        username = self.email.controls[0].value
+        password =  self.password.controls[0].value
+
+
+        # Verifique se as credenciais estão corretas
+        if username in user_credentials and user_credentials[username] == password:
+            print("Login realizado com sucesso!")
+            # Aqui você pode redirecionar o usuário para outra página, por exemplo:
+            self.page.go('/dashboard')
+        else:
+            print("Usuário ou senha incorretos")
 
     def get_content(self):
         
@@ -366,60 +102,8 @@ class Login(ft.Row):
                         ],
                     )
 
-        # Campo responsivo.
-        email = ft.ResponsiveRow(
-            columns=12,
-            controls=[
-                ft.TextField(
-                    focused_border_color=ft.colors.RED,
-                    hint_text='Digite seu Login Bimer', 
-                    label='Login Bimer', 
-                    width=250,
-                    hint_style=ft.TextStyle(
-                        font_family="Arial",
-                        color=ft.colors.BLACK,
-                        # weight="bold"
-                    ),
-                    label_style=ft.TextStyle(
-                        font_family="Arial",
-                        color=ft.colors.BLACK,
-                        # weight="bold"
-                    ),
-                    color=ft.colors.BLACK,
-                    expand=True
-                )
-            ],
-        )
-
-        # Campo responsivo.
-        password = ft.ResponsiveRow(
-            columns=12,
-            controls=[
-                ft.TextField(
-                    focused_border_color=ft.colors.RED,
-                    hint_text='Digite sua senha', 
-                    label='Password', 
-                    width=250,
-                    can_reveal_password=True, 
-                    password=True,                    
-                    hint_style=ft.TextStyle(
-                        font_family="Arial",
-                        color=ft.colors.BLACK,
-                        # weight="bold"
-                    ),
-                    label_style=ft.TextStyle(
-                        font_family="Arial",
-                        color=ft.colors.BLACK,
-                        # weight="bold"
-                    ),
-                    color=ft.colors.BLACK,
-                    expand=True
-                )
-            ],
-        )
-
         login_senha = ft.Column(
-            controls= [texto_login, email, password, botao_fazer_login, botao_fazer_cadastro],
+            controls= [texto_login, self.email, self.password, botao_fazer_login, botao_fazer_cadastro],
             expand=True,
         )
 
