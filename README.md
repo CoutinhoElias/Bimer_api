@@ -4,6 +4,7 @@ O Bimer_api facilita a integração com a API Bimer da Alterdata, automatizando 
 
 ## Funcionalidades
 
+* Faz login e Cadastra novos usuários.
 * Buscar pedidos por diversos critérios (ID, data, cliente, etc.).
 * Editar detalhes dos pedidos (status, data de entrega, itens).
 * Cancelar pedidos.
