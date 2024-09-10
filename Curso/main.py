@@ -1,3 +1,11 @@
+# Gerar apk Windows
+# pip install Pillow
+# flet pack .\Curso\main.py --icon .\Curso\super_volt.png --add-data .\Curso\assets:assets --hidden-import pymssql -n "NovoApp"
+
+# Usando pyinstaller
+# pyinstaller --onefile --add-data ".\Curso\assets;assets" --hidden-import pymssql .\Curso\main.py
+
+
 import flet as ft
 
 # Importação de componentes customizados e views
@@ -6,13 +14,25 @@ from partials.app_bar import MyAppBar
 from views.home_view import HomeView
 from views.login import Cadastrar, Login
 from views.store_view import StoreView
-from views.pedido_view_local import PedidoView
+from views.editar_pedido_compra_view_local import PedidoView
+from views.criar_pedido_compra_view import PedidoNovoView
+from views.criar_pedido_compra_view_local import PedidoNovoViewLocal
+from database.users_firebase import FirebaseAuth
 
 class App:
     def __init__(self, page: ft.Page):
         """Inicializa a aplicação com a configuração da página e navegação"""
         self.page = page
         
+        # Para que eu possa usar essas variáveis em outras classes devo passar a instância self na chamada das outras classes.
+        # Exemplo: view = PedidoNovoViewLocal(self.page, self).get_content()
+        # E nas classes, no init assim: def __init__(self, page: ft.Page, app_instance):
+        
+        self.user_info = None  # Variável para armazenar as informações do usuário
+        self.password_api = None # Variável para armazenar as informações do usuário
+        self.params_api = None
+        self.id_bimer = None # Variável para armazenar as informações do usuário
+
         # Configurações da página
         self.page.bgcolor = ft.colors.BLACK
         self.page.title = "Sistema SV em Flet"
@@ -51,13 +71,15 @@ class App:
                 case 0:
                     self.page.go("/")
                 case 1:
-                    self.page.go("/store")
+                    self.page.go("/pedido")                    
                 case 2:
-                    self.page.go("/pedido") 
+                    self.page.go("/pedido/novo/local")
                 case 3:
-                    self.page.go("/login")
+                    self.page.go("/pedido/novo")
                 case 4:
-                    self.page.go("/login/novo") 
+                    self.page.go("/login")
+                case 5:
+                    self.page.go("/login/novo")  
                 case _:
                     self.page.go("/")
 
@@ -74,12 +96,12 @@ class App:
             match route:
                 case "/":
                     view = HomeView().get_content()
-                    app_bar_title = "Pagina Principal"
+                    app_bar_title = f"Pagina Principal"
                     app_bar_color = ft.colors.GREY_800
                     include_drawer = True
-                case "/store":
-                    view = StoreView().get_content()
-                    app_bar_title = "Store"
+                case "/pedido/novo/local":
+                    view = PedidoNovoViewLocal(self.page, self).get_content()
+                    app_bar_title = "Importar Pedido de Compra do Excel (Local)"
                     app_bar_color = ft.colors.GREY_800
                     include_drawer = True
                 case "/pedido":
@@ -87,8 +109,14 @@ class App:
                     app_bar_title = "Pedido de Compra"  
                     app_bar_color = ft.colors.GREY_800  
                     include_drawer = True
+                case "/pedido/novo":
+                    view = PedidoNovoView(self.page).get_content()
+                    app_bar_title = "Importar Pedido de Compra do Excel (API)"  
+                    app_bar_color = ft.colors.GREY_800  
+                    include_drawer = True
                 case "/login":
-                    view = Login(self.page).get_content()
+                    # view = Login(self.page).get_content()
+                    view = Login(self.page, self).get_content()
                     app_bar_title = "Login"  
                     app_bar_color = ft.colors.GREY_800  
                     include_drawer = False
@@ -121,7 +149,7 @@ class App:
 
         self.page.on_route_change = route_change  # Define o callback para mudanças de rota
         self.page.go("/login")  # Define a rota inicial
-        
+        self.page.update
 
 if __name__ == '__main__':
     # Inicializa a aplicação Flet com a classe App como alvo e o diretório de assets

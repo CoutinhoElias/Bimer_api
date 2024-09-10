@@ -40,7 +40,6 @@ def my_table(datatable=None):
                 controls = [datatable], 
                 scroll = ft.ScrollMode.ALWAYS
             )
-
         ],
         scroll=ft.ScrollMode.ALWAYS, # Define a existência de um Scroll
         on_scroll_interval=0, # Define o intervalo de exibição da fo.Column o padrão é 100 milissegundos           

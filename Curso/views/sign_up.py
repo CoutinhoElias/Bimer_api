@@ -1,6 +1,8 @@
 import flet as ft
 from partials.button import MyButton
 # from views.login import Login
+from database.users_firebase import FirebaseAuth
+# from configs.pyrebase_config import FirebaseConfig
 
 class Cadastrar(ft.Row):
 
@@ -9,23 +11,7 @@ class Cadastrar(ft.Row):
         super().__init__()
         self.page = page  # Certifique-se de armazenar a página na instância
 
-    def registrar_clicked(self, e):
-        print("Registrado com sucesso!")
-
-    def get_content(self):
-        
-        # Botão personalizado para realizar a filtragem
-        botao_fazer_cadastro = ft.ResponsiveRow(
-            columns=12,
-            controls=[MyButton(text="Registrar-se", on_click=self.registrar_clicked)],
-        )
-
-        botao_fazer_login = ft.ResponsiveRow(
-            columns=12,
-            controls=[ft.TextButton('Já tem uma conta?', on_click=lambda e: self.page.go('/login'), data=0)],
-        )
-
-        label_do_formulário = ft.ResponsiveRow(
+        self.label_do_formulário = ft.ResponsiveRow(
                         columns=12,
                         controls=[
                             ft.Text(
@@ -39,7 +25,7 @@ class Cadastrar(ft.Row):
                     )
 
         # Campo responsivo.
-        email = ft.ResponsiveRow(
+        self.email = ft.ResponsiveRow(
             columns=12,
             controls=[
                 ft.TextField(
@@ -65,40 +51,15 @@ class Cadastrar(ft.Row):
         )
 
         # Campo responsivo.
-        nome = ft.ResponsiveRow(
-            columns=12,
-            controls=[
-                ft.TextField(
-                    focused_border_color=ft.colors.RED,
-                    hint_text='Digite seu Nome', 
-                    label='Nome/Sobrenome',
-                    
-                    width=250,
-                    hint_style=ft.TextStyle(
-                        font_family="Arial",
-                        color=ft.colors.BLACK,
-                        # weight="bold"
-                    ),
-                    label_style=ft.TextStyle(
-                        font_family="Arial",
-                        color=ft.colors.BLACK,
-                        # weight="bold"
-                    ),
-                    color=ft.colors.BLACK,
-                    expand=True
-                )
-            ],
-        )
-
-        # Campo responsivo.
-        password = ft.ResponsiveRow(
+        self.password = ft.ResponsiveRow(
             columns=6,
             controls=[
                 ft.TextField(
                     focused_border_color=ft.colors.RED,
                     hint_text='Digite sua senha', 
                     label='Password',
-                    
+                    can_reveal_password=True, 
+                    password=True,
                     width=250,
                     hint_style=ft.TextStyle(
                         font_family="Arial",
@@ -117,14 +78,15 @@ class Cadastrar(ft.Row):
         )
 
         # Campo responsivo.
-        confirm_password = ft.ResponsiveRow(
+        self.confirm_password = ft.ResponsiveRow(
             columns=6,
             controls=[
                 ft.TextField(
                     focused_border_color=ft.colors.RED,
                     hint_text='Confirme sua senha', 
                     label='Confirmação de Senha',
-                    
+                    can_reveal_password=True, 
+                    password=True,
                     width=250,
                     hint_style=ft.TextStyle(
                         font_family="Arial",
@@ -142,9 +104,68 @@ class Cadastrar(ft.Row):
             ],
         )
 
+        # Campo responsivo.
+        self.password_api = ft.ResponsiveRow(
+            columns=6,
+            controls=[
+                ft.TextField(
+                    focused_border_color=ft.colors.RED,
+                    hint_text='Password API', 
+                    label='Senha API',
+                    can_reveal_password=True, 
+                    password=True,
+                    width=250,
+                    hint_style=ft.TextStyle(
+                        font_family="Arial",
+                        color=ft.colors.BLACK,
+                        # weight="bold"
+                    ),
+                    label_style=ft.TextStyle(
+                        font_family="Arial",
+                        color=ft.colors.BLACK,
+                        # weight="bold"
+                    ),
+                    color=ft.colors.BLACK,
+                    expand=True
+                )
+            ],
+        )
+
+    def registrar_clicked(self, e):
+        auth_system = FirebaseAuth()
+
+        username = self.email.controls[0].value
+        password =  self.password.controls[0].value
+        confirm_password =  self.confirm_password.controls[0].value
+        password_api =  self.password_api.controls[0].value
+
+        if password != confirm_password:
+            print('Senhas estão diferentes!')
+        else:
+            # Sign up example
+            uid_user = auth_system.signup(username+'@sveletrica.com', password, confirm_password)
+            if uid_user:
+                print("Cadastro realizado com sucesso!")
+                auth_system.insere_perfil(username, password_api)
+                self.page.go('/login')
+            else:
+                print("Falha no cadastro. Seu E-mail já existe!")        
+
+    def get_content(self):
+        
+        # Botão personalizado para realizar a filtragem
+        botao_fazer_cadastro = ft.ResponsiveRow(
+            columns=12,
+            controls=[MyButton(text="Registrar-se", on_click=self.registrar_clicked)],
+        )
+
+        botao_fazer_login = ft.ResponsiveRow(
+            columns=12,
+            controls=[ft.TextButton('Já tem uma conta?', on_click=lambda e: self.page.go('/login'), data=0)],
+        )
 
         login_senha = ft.Column(
-            controls= [label_do_formulário, email, password, confirm_password, botao_fazer_cadastro, botao_fazer_login],
+            controls= [self.label_do_formulário, self.email, self.password, self.confirm_password, self.password_api, botao_fazer_cadastro, botao_fazer_login],
             expand=True,
         )
 
@@ -152,7 +173,7 @@ class Cadastrar(ft.Row):
             content=login_senha,
             bgcolor=ft.colors.WHITE,
             width=500,
-            height=350,
+            height=400,
             border_radius=ft.border_radius.all(10),
             padding=ft.padding.all(5),
             alignment=ft.alignment.center,
