@@ -17,6 +17,8 @@ from sqlalchemy import create_engine, text, Column, update, insert, select, and_
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm import Session
+from sqlalchemy.ext.declarative import declarative_base
+# from database.models import Pessoa, PedidoDeCompra, PedidoDeCompraItem, ControleAlcadaRegra, Codigo, Produto, CodigoProduto, Unidade
 
 
 # Conecta a máquina para consultar minhas queries.

@@ -142,7 +142,7 @@ class Login(ft.Row):
         # Botão personalizado para realizar a filtragem
         botao_fazer_login = ft.ResponsiveRow(
             columns=12,
-            controls=[MyButton(text="Enviar Alterações", on_click=self.logar_clicked)],
+            controls=[MyButton(text="Logar/Entrar", on_click=self.logar_clicked)],
         )
 
         botao_fazer_cadastro = ft.ResponsiveRow(

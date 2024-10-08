@@ -25,7 +25,7 @@ from configs.settings import *
 # Encontrar uma maneira de criar tabela com linha em branco
 # self.add_datatable_itens('', '', '', '', 'NENHUM ITEM LISTADO', 'REDEFINA SEU FILTRO', selecionado=False)
 
-class PedidoView:
+class PedidoNovoViewLocalUm:
     def __init__(self, page):
         self.page = page
         self.id_fornecedor = None
@@ -36,6 +36,8 @@ class PedidoView:
         self.tb_tabela = ft.Ref[ft.DataTable]()
         self.tb_tabela_itens_pedido = ft.Ref[ft.DataTable]()
         self.tb_tab_pedido = ft.Ref[ft.Tab]()
+        self.container_pedido = ft.Ref[ft.Container]()
+        
 
         self.pedidos_json = {} # Todos os pedidos.
         self.pedido_produtos_json = {} # Todos os produtos de um pedido.
@@ -51,14 +53,9 @@ class PedidoView:
                                             ft.MaterialState.DEFAULT: ft.CircleBorder(),
                                         },
                                     )
-        
-        # Estilo para os campos de entrada
-        # self.input_style = ft.TextStyle(
-        #     color=ft.colors.WHITE,  # Cor do texto
-        #     placeholder_color=ft.colors.GREY_400,  # Cor dos placeholders
-        #     border_color=ft.colors.ORANGE_300  # Cor da borda
-        # )        
         # =============================================================================================================================
+
+        self.coluna_um = []
 
         self.pg_codigo_chamada = ft.TextField(
             label="Código", 
@@ -127,6 +124,11 @@ class PedidoView:
             # icon=ft.icons.DATE_RANGE,
         )
 
+        self.pedidos_dict = []
+
+        # Lista para armazenar o estado dos switches
+        self.switches_state = []
+
         # ---------------------------------------------------------------------------------------------------------------------------------------
         # TABELAS DA VIEW
         # ---------------------------------------------------------------------------------------------------------------------------------------
@@ -144,7 +146,7 @@ class PedidoView:
 
         # LISTA DE ITENS DO PEDIDO
         self.colunas_dos_itens_dos_pedidos = [
-            ft.DataColumn(ft.Text("Código",  width=50,), on_sort=lambda e: print(f"{e.column_index}, {e.ascending}"),),
+            ft.DataColumn(ft.Text("Código", width=50), on_sort=lambda e: print(f"{e.column_index}, {e.ascending}"),),
             ft.DataColumn(ft.Text("Descricao", width=460), on_sort=lambda e: print(f"{e.column_index}, {e.ascending}"),),
             ft.DataColumn(ft.Text("Quantidade", width=80),  numeric=True, on_sort=lambda e: print(f"{e.column_index}, {e.ascending}"),),
             ft.DataColumn(ft.Text("Vl. Unit.", width=85),  numeric=True),
@@ -191,7 +193,6 @@ class PedidoView:
         if e.control.selected:
             if self.tb_tabela.current:
                 selected_row = e.control  # Pega a linha selecionada diretamente do evento.
-                # Posso usar este recurso para capturar qualquer coluna dependendo apenas de sua posição na lista de campos, neste caso é 0 (zero)
                 selected_cell_value = selected_row.cells[0].content.value # Copia o código do pedido de compra.
                 # Troca a aba do controle TAB.
                 self.tb_tab_pedido.current.selected_index = 1
@@ -221,44 +222,44 @@ class PedidoView:
             print('Deselected2')
 
 
-    # ---------------------------------------------------------------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------------------------------------------------------
     # POPULANDO TABELAS
     # ---------------------------------------------------------------------------------------------------------------------------------------
 
     #TABELA DE PEDIDOS
-    def add_datatable_itens(self, codigo, status, data_emissao, data_entrega, descricao, observacao, selecionado=False):
-        # Adiciona uma nova linha à DataTable 'self.datatable'
-        self.datatable.rows.append(
-            ft.DataRow(
-                [
-                    # Adiciona uma célula com o valor 'codigo'
-                    ft.DataCell(ft.Text(value=codigo)),
+    # def add_datatable_itens(self, codigo, status, data_emissao, data_entrega, descricao, observacao, selecionado=False):
+    #     # Adiciona uma nova linha à DataTable 'self.datatable'
+    #     self.datatable.rows.append(
+    #         ft.DataRow(
+    #             [
+    #                 # Adiciona uma célula com o valor 'codigo'
+    #                 ft.DataCell(ft.Text(value=codigo)),
                     
-                    # Adiciona uma célula com o valor 'status'
-                    ft.DataCell(ft.Text(status)),
+    #                 # Adiciona uma célula com o valor 'status'
+    #                 ft.DataCell(ft.Text(status)),
                     
-                    # Adiciona uma célula com o valor 'data_emissao'
-                    ft.DataCell(ft.Text(data_emissao)),
+    #                 # Adiciona uma célula com o valor 'data_emissao'
+    #                 ft.DataCell(ft.Text(data_emissao)),
                     
-                    # Adiciona uma célula com o valor 'data_entrega'
-                    ft.DataCell(ft.Text(data_entrega)),
+    #                 # Adiciona uma célula com o valor 'data_entrega'
+    #                 ft.DataCell(ft.Text(data_entrega)),
                     
-                    # Adiciona uma célula com o valor 'descricao'
-                    ft.DataCell(ft.Text(descricao)),
+    #                 # Adiciona uma célula com o valor 'descricao'
+    #                 ft.DataCell(ft.Text(descricao)),
                     
-                    # Adiciona uma célula com o valor 'observacao' e alinha o texto à esquerda
-                    ft.DataCell(ft.Text(observacao, text_align="LEFT")),
-                ],
-                # Define se a linha está selecionada ou não
-                selected=selecionado,
+    #                 # Adiciona uma célula com o valor 'observacao' e alinha o texto à esquerda
+    #                 ft.DataCell(ft.Text(observacao, text_align="LEFT")),
+    #             ],
+    #             # Define se a linha está selecionada ou não
+    #             selected=selecionado,
                 
-                # Define o manipulador de eventos para mudança de seleção da linha
-                on_select_changed = self.change_select,
-            )
-        )
-        # Atualiza a DataTable para refletir as mudanças
-        self.datatable.update()
-        # self.page.banner.content.controls[0].controls[1].controls[1].update()
+    #             # Define o manipulador de eventos para mudança de seleção da linha
+    #             on_select_changed = self.change_select,
+    #         )
+    #     )
+    #     # Atualiza a DataTable para refletir as mudanças
+    #     self.datatable.update()
+    #     # self.page.banner.content.controls[0].controls[1].controls[1].update()
 
     # Função para buscar o valor pela chave
     def buscar_valor_por_chave(self, dicionario, chave):
@@ -337,27 +338,27 @@ class PedidoView:
         # Adiciona uma nova linha à DataTable 'self.datatable_itens_pedido'
         self.datatable_itens_pedido.rows.append(
             ft.DataRow(
-                cells=[
+                [
                     # Adiciona uma célula com o valor 'codigo' do produto
-                    ft.DataCell(ft.Text(value=codigo), wrap=True, min_height=50),
+                    ft.DataCell(ft.Text(value=codigo)),
                     
                     # Adiciona uma célula com a 'descricao' do produto
-                    ft.DataCell(ft.Text(descricao), wrap=True, min_height=50),
+                    ft.DataCell(ft.Text(descricao)),
                     
                     # Adiciona uma célula com a 'quantidade' pedida
-                    ft.DataCell(ft.Text(quantidade), wrap=True, min_height=50),
+                    ft.DataCell(ft.Text(quantidade)),
                     
                     # Adiciona uma célula com o 'valor_item'
-                    ft.DataCell(ft.Text(valor_item), wrap=True, min_height=50),
+                    ft.DataCell(ft.Text(valor_item)),
                     
                     # Adiciona uma célula com o 'valor_ipi' do produto
-                    ft.DataCell(ft.Text(valor_ipi), wrap=True, min_height=50),
+                    ft.DataCell(ft.Text(valor_ipi)),
                     
                     # Adiciona uma célula com o 'valor_icms' do produto
-                    ft.DataCell(ft.Text(valor_icms), wrap=True, min_height=50),
+                    ft.DataCell(ft.Text(valor_icms)),
                     
                     # Adiciona uma célula com o 'valor_unitario' do produto
-                    ft.DataCell(ft.Text(valor_unitario), wrap=True, min_height=50),
+                    ft.DataCell(ft.Text(valor_unitario)),
                 ],
                 # Define se a linha está selecionada ou não
                 selected=selecionado,
@@ -406,7 +407,7 @@ class PedidoView:
             return {}
 
         # Construa um dicionário com os detalhes dos pedidos de compra
-        pedidos_dict = {
+        self.pedidos_dict = {
             pedido.CdChamada: {
                 "CdChamada": pedido.CdChamada,
                 "IdPedidoDeCompra": pedido.IdPedidoDeCompra,
@@ -421,19 +422,24 @@ class PedidoView:
         }
 
         # Adicione cada pedido à DataTable
-        for pedido in pedidos_dict.values():
-            self.add_datatable_itens(
-                pedido["CdChamada"], 
-                pedido["StPedidoDeCompra"], 
-                pedido["DtEmissao"], 
-                pedido["DtEntrega"], 
-                pedido["DsPedidoDeCompra"], 
-                pedido["DsObservacao"], 
-                selecionado=pedido["Selecionado"]
-            )
+        # for pedido in pedidos_dict.values():
+        #     self.add_datatable_itens(
+        #         pedido["CdChamada"], 
+        #         pedido["StPedidoDeCompra"], 
+        #         pedido["DtEmissao"], 
+        #         pedido["DtEntrega"], 
+        #         pedido["DsPedidoDeCompra"], 
+        #         pedido["DsObservacao"], 
+        #         selecionado=pedido["Selecionado"]
+        #     )
 
         # Retorne o dicionário com os pedidos
-        return pedidos_dict
+        self.create_list_tiles()
+        # print(self.container_pedido.current.content.controls,  '<<<<<======')
+        # self.container_pedido.current.content.controls=self.pedidos_dict
+
+        # self.page.update()
+        return self.pedidos_dict
 
     def pesquisa_fornededor(self, codigo_crm):
         self.pg_codigo_chamada.value = self.pg_codigo_chamada.value.zfill(6)
@@ -539,6 +545,52 @@ class PedidoView:
         self.page.add(ft.Text("DatePicker dismissed"))
         self.page.update()
 
+    # Função para alternar o Switch selecionado
+    def toggle_switch(self, index):
+        for i in range(len(self.switches_state)):
+            self.switches_state[i].value = False  # Desmarca todos os switches
+        self.switches_state[index].value = True  # Marca apenas o switch atual
+        self.page.update()
+
+    # Função para criar os ListTiles dinamicamente
+    def create_list_tiles(self):
+        list_tiles = []
+
+        for index, item in enumerate(self.pedidos_dict):
+            switch = ft.Switch(value=False, on_change=lambda e, idx=index: self.toggle_switch(idx))
+            self.switches_state.append(switch)  # Armazena o switch na lista
+            
+            list_tiles.append(
+                ft.ListTile(
+                    leading=ft.Text(item, style=ft.TextStyle(weight=ft.FontWeight.BOLD, size=15)),
+                    title=ft.Text(self.pedidos_dict[item]["DsPedidoDeCompra"]),
+                    subtitle=ft.Text(self.pedidos_dict[item]["DtEmissao"]),
+                    trailing=switch,
+                    toggle_inputs=True
+                )
+            )
+        return list_tiles
+
+    def get_list_pedido(self):
+        coluna = ft.Column(
+            expand=True,
+            alignment=ft.MainAxisAlignment.START,
+            controls=[  # Use "controls" para passar uma lista de controles
+                ft.Card(
+                    content=ft.Container(
+                        ref=self.container_pedido,
+                        width=500,
+                        content=ft.Column(
+                            self.create_list_tiles(),  # Cria os ListTiles dinamicamente
+                            spacing=0,
+                        ),
+                        padding=ft.padding.symmetric(vertical=10),
+                    )
+                )
+            ]
+        )
+        return coluna
+
     def get_content(self):
         # PRIMEIRA ABA -------------------------------------------------------------------------------------------------------------------
 
@@ -549,7 +601,17 @@ class PedidoView:
             columns=12,
             spacing=0,
             controls=[filtrar_pedido],
+            col={"md": 1.5},
         )        
+
+        salvar_pedido = MyButton(text="Salvar", on_click=self.filtrar_clicked)
+
+        salvar_pedido_responsivo = ft.ResponsiveRow(
+            columns=12,
+            spacing=0,
+            controls=[salvar_pedido],
+            # col={"md": 1.5},
+        )
 
         # Criação de uma linha responsiva contendo os campos de código da empresa, status do pedido, código de chamada e nome do fornecedor
         empresa_codigo_fornecedor = ft.ResponsiveRow(
@@ -564,13 +626,54 @@ class PedidoView:
             controls=[self.mytable_pedidos],
         )
 
+        self.coluna_um = self.get_list_pedido
+
+        coluna_esquerda = ft.Container(
+            # bgcolor=ft.colors.BLUE,
+            # expand=True,
+            content=ft.Column(
+                        alignment=ft.MainAxisAlignment.START,
+                        controls=[self.coluna_um],
+                        scroll=ft.ScrollMode.ALWAYS, # Define a existência de um Scroll
+                        on_scroll_interval=0, # Define o intervalo de exibição da fo.Column o padrão é 100 milissegundos           
+                    ),
+            alignment=ft.alignment.center
+        )
+
+        coluna_direita = ft.Container(
+            # bgcolor=ft.colors.RED,
+            expand=True,
+            content=ft.Column(
+                alignment=ft.MainAxisAlignment.START,
+                controls=[self.mytable_itens]
+            ),
+            alignment=ft.alignment.top_left
+        )
+
+        # Tela aba 1 final montada.
+        lista_e_tabela = ft.Container(
+            expand=True,
+            # bgcolor=ft.colors.AMBER,
+            content=ft.Row(
+                controls=[coluna_esquerda, coluna_direita]
+            )
+        )
+
+        tela_meio = ft.Container(
+            expand=True,
+            content=ft.Column(
+                controls=[lista_e_tabela]
+            ),
+            alignment=ft.alignment.top_left
+        )
+
         # Botão de ícone para selecionar a data inicial
         btn_pick_date_start = ft.IconButton(
             icon=ft.icons.DATE_RANGE,
             icon_color="blue400",
             icon_size=30,
             tooltip="Data Inicial.",
-            col={"md": .6},
+            col={"md": .3},
             style=self.button_style,
             on_click=lambda e: self.page.open(self.create_date_picker()), 
         )
@@ -581,7 +684,7 @@ class PedidoView:
             icon_color="blue400",
             icon_size=30,
             tooltip="Data Final.",
-            col={"md": .6},
+            col={"md": .3},
             style=self.button_style,
             on_click=lambda e: self.page.open(self.create_date_picker_end()),
         )
@@ -593,27 +696,21 @@ class PedidoView:
         datas_e_botoes = ft.ResponsiveRow(
             columns=12,
             spacing=0,
-            controls=[self.txt_pick_date_start, btn_pick_date_start, spacer, self.txt_pick_date_end, btn_pick_date_end],
-        )
+            controls=[self.txt_pick_date_start, btn_pick_date_start, spacer, self.txt_pick_date_end, btn_pick_date_end, filtrar_pedido_responsivo],
+        ) #                     2                       0.3            0.4              2                   0.3                   
 
         # SEGUNDA ABA ---------------------------------------------------------------------------------------------------------------------
 
         # Botão personalizado para salvar o pedido.
         enviar_alteracao_pedido = MyButton(text="Enviar Alterações", on_click=self.salvar_clicked)
 
-
-        filtrar_pedido_itens_responsivo = ft.ResponsiveRow(
-            columns=12,
-            spacing=0,
-            controls=[enviar_alteracao_pedido],
-        )  
         #----------------------------------------------------------------------------------------------------------------------------------
         # Início da tela aba 0
         tela_aba_zero_inicio = ft.Container(
             expand=True,
             # bgcolor=ft.colors.AMBER,
             content=ft.Column(
-                controls=[empresa_codigo_fornecedor, datas_e_botoes, tabela_dos_pedidos]
+                controls=[empresa_codigo_fornecedor, datas_e_botoes, tela_meio]
             ),
             alignment=ft.alignment.top_right
         )
@@ -623,84 +720,19 @@ class PedidoView:
             # expand=True,
             # bgcolor=ft.colors.BLUE,
             content=ft.Column(
-                controls=[filtrar_pedido_responsivo]
+                controls=[salvar_pedido_responsivo]
             ),
             alignment=ft.alignment.bottom_right
         )
 
         # Tela aba 0 final montada.
-        layout_tab0 = ft.Container(
+        layout = ft.Container(
             expand=True,
             # bgcolor=ft.colors.AMBER,
             content=ft.Column(
                 controls=[tela_aba_zero_inicio, tela_aba_zero_fim]
             )
         )
-        # ---------------------------------------------------------------------------------------------------------------------------
-
-        # Início da tela aba 1
-        tela_aba_um_inicio = ft.Container(
-            expand=True,
-            # bgcolor=ft.colors.AMBER,
-            content=ft.Column(
-                controls=[self.mytable_itens]
-            ),
-            alignment=ft.alignment.top_right
-        )
-
-        # Final da tela aba 1
-        tela_aba_um_fim = ft.Container(
-            # expand=True,
-            # bgcolor=ft.colors.BLUE,
-            content=ft.Column(
-                controls=[filtrar_pedido_itens_responsivo]
-            ),
-            alignment=ft.alignment.bottom_right
-        )
-
-        # Tela aba 1 final montada.
-        layout_tab1 = ft.Container(
-            expand=True,
-            # bgcolor=ft.colors.AMBER,
-            content=ft.Column(
-                controls=[tela_aba_um_inicio, tela_aba_um_fim]
-            )
-        )
-
-        # Criação das abas para navegação entre a lista de pedidos e os itens do pedido selecionado
-        my_tab = ft.Tabs(
-            ref=self.tb_tab_pedido,
-            tabs=[
-                ft.Tab(
-                    text='Lista de Pedidos',
-                    icon=ft.icons.TABLE_VIEW_OUTLINED,
-                    content=ft.Container(
-                        expand=False,
-                        padding=ft.padding.all(10),
-                        content=layout_tab0,
-                        # width=20,
-                        # height=5,
-                        # bgcolor=ft.colors.AMBER_100                
-                    ),
-                ),
-                ft.Tab(
-                    text='Itens do Pedido selecionado',
-                    icon=ft.icons.TABLE_ROWS_OUTLINED,
-                    content=ft.Container(
-                        expand=False,
-                        padding=ft.padding.all(10),
-                        content=layout_tab1,
-                    )                
-                ),            
-            ],
-            selected_index=0,
-            indicator_tab_size=True,
-            label_color=ft.colors.GREEN,
-            # width=100, # Ajuste da Largura
-            height=893, # Ajuste da altura
-            # expand=1,
-            # on_change=lambda _: print(directory_path_or_file.value)
-        )
 
         # Retorna o objeto 'my_tab' contendo as abas configuradas
-        return my_tab
+        return layout

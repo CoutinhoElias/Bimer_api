@@ -1,19 +1,21 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from database.models import PedidoDeCompra  # Importa a classe PedidoDeCompra do módulo database.models
+from database.models import PedidoDeCompra, Pessoa  # Importa a classe PedidoDeCompra do módulo database.models
 
 class PedidosDeCompra:
-    def __init__(self, connection_string, cd_empresa, codigo_crm, id_fornecedor, status, dt_emissao_ini, dt_emissao_fim):
+    def __init__(self, connection_string, cd_empresa, codigo_crm, id_fornecedor, status, dt_emissao_ini, dt_emissao_fim, pg_codigo_chamada_pedido):
         """Inicializa a classe PedidosDeCompra com os parâmetros fornecidos e cria a engine e sessão do SQLAlchemy"""
         self.engine = create_engine(connection_string)  # Cria a engine de conexão com o banco de dados
         self.Session = sessionmaker(bind=self.engine)  # Cria uma fábrica de sessões
 
         self.cd_empresa = cd_empresa
         self.codigo_crm = codigo_crm
+        self.pg_codigo_chamada_pedido = pg_codigo_chamada_pedido
         self.status = status
         self.dt_emissao_ini = dt_emissao_ini
         self.dt_emissao_fim = dt_emissao_fim
-        self.id_fornecedor = id_fornecedor        
+        self.id_fornecedor = id_fornecedor
+        
     
     def create_session(self):
         """Cria e retorna uma nova sessão"""
@@ -49,12 +51,29 @@ class PedidosDeCompra:
         """Obtém todos os pedidos de compra filtrados por empresa, fornecedor, status e período de emissão"""
         session = self.create_session()
         try:
-            pedidos_de_compras = session.query(PedidoDeCompra).filter(
-                PedidoDeCompra.CdEmpresa == self.cd_empresa,
-                PedidoDeCompra.IdPessoaFornecedor == self.id_fornecedor,
-                PedidoDeCompra.StPedidoDeCompra != 'T',
-                PedidoDeCompra.DtEmissao.between(self.dt_emissao_ini, self.dt_emissao_fim)
-            ).order_by(PedidoDeCompra.CdChamada).all()  # Consulta e ordena os pedidos de compra filtrados
+            filter_conditions = []
+            
+            if self.cd_empresa is not None:
+                filter_conditions.append(PedidoDeCompra.CdEmpresa == self.cd_empresa)
+            
+            if self.id_fornecedor is not None:
+                filter_conditions.append(PedidoDeCompra.IdPessoaFornecedor == self.id_fornecedor)
+            
+            if self.pg_codigo_chamada_pedido != '':
+                filter_conditions.append(PedidoDeCompra.CdChamada == self.pg_codigo_chamada_pedido)
+                self.dt_emissao_ini = None
+                self.dt_emissao_fim = None
+
+            if self.dt_emissao_ini is not None and self.dt_emissao_fim is not None:
+                filter_conditions.append(PedidoDeCompra.DtEmissao.between(self.dt_emissao_ini, self.dt_emissao_fim))
+            
+            filter_conditions.append(PedidoDeCompra.StPedidoDeCompra == self.status)
+            
+            pedidos_de_compras = session.query(PedidoDeCompra.IdPedidoDeCompra, PedidoDeCompra.CdChamada, PedidoDeCompra.StPedidoDeCompra, PedidoDeCompra.DtEmissao, PedidoDeCompra.DtEntrega, PedidoDeCompra.DsPedidoDeCompra, PedidoDeCompra.DsObservacao, 
+                                               Pessoa.CdChamada.label('CdFornecedor'), Pessoa.NmCurto, Pessoa.CdCPF_CGC)\
+                                         .join(Pessoa, PedidoDeCompra.IdPessoaFornecedor == Pessoa.IdPessoa)\
+                                         .filter(*filter_conditions).order_by(PedidoDeCompra.CdChamada) #.all()
+            # print(pedidos_de_compras)
             return pedidos_de_compras
         except Exception as e:
             print(f'Erro ao obter pedidos de compra filtrados: {e}')

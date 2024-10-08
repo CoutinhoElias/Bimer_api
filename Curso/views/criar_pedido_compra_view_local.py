@@ -15,10 +15,15 @@ from querys.qry_fornecedor import Fornecedor
 
 class PedidoNovoViewLocal:
     def __init__(self, page, app_instance):
+        # Para obter acesso da página principal nesta página é preciso iniciar self.page e self.app_instance importado do init.
+        # Lá no main, na chamada dessa classe deve ser enviado como parâmetro.
         self.page = page
         self.app_instance = app_instance  # Armazena a instância da classe App
+        
         self.id_fornecedor = None
         self.df_itens_planilha = None
+
+        self.pb = ft.ProgressBar(width=400)
 
         # Passa app_instance para PedidosDeCompraItensLocal para acessar id_bimer
         self.itens_pedido_de_compra = PedidosDeCompraItensLocal(id_pedido_de_compra='ASDFG1234', app_instance=self.app_instance) 
@@ -33,8 +38,8 @@ class PedidoNovoViewLocal:
         # LISTA DE ITENS DO PEDIDO
         self.campos_pedido_itens = [
             ft.DataColumn(ft.Text("Código", width=50), on_sort=lambda e: print(f"{e.column_index}, {e.ascending}"),),
-            ft.DataColumn(ft.Text("Descricao", width=80), on_sort=lambda e: print(f"{e.column_index}, {e.ascending}"),),
-            ft.DataColumn(ft.Text("Und", width=29), on_sort=lambda e: print(f"{e.column_index}, {e.ascending}"),),
+            ft.DataColumn(ft.Text("Descricao", width=70), on_sort=lambda e: print(f"{e.column_index}, {e.ascending}"),),
+            ft.DataColumn(ft.Text("Und", width=15), on_sort=lambda e: print(f"{e.column_index}, {e.ascending}"),),
             ft.DataColumn(ft.Text("Preço", width=40), numeric=True, on_sort=lambda e: print(f"{e.column_index}, {e.ascending}"),),
             ft.DataColumn(ft.Text("Icms", width=30), numeric=True, on_sort=lambda e: print(f"{e.column_index}, {e.ascending}"),),
             ft.DataColumn(ft.Text("Ipi", width=30), numeric=True, on_sort=lambda e: print(f"{e.column_index}, {e.ascending}"),),
@@ -66,11 +71,6 @@ class PedidoNovoViewLocal:
         self.dialogo.open = True
         self.page.update()
     # =========================================================================================================================================
-
-    def filtrar_clicked(self, e):
-        self.pesquisa_pedidos()
-        self.datatable.rows = []
-        # print("Cancel clicked")
 
     # ---------------------------------------------------------------------------------------------------------------------------------------
     # IDENTIFICANDO PEDIDO SELECIONADO - Order
@@ -120,11 +120,20 @@ class PedidoNovoViewLocal:
             # print(f"Índice: {row.Index}")
             # print(f"Valor da coluna: {row}")
             self.add_datatable_itens_pedido(row.codigo_produto, row.nome_produto, row.und, row.preco, row.icms, row.ipi, row.observacao, row.informacoes_gerais, selecionado=False)
-            
 
     def criar_pedido_clicked(self, e):
-        # print("Chamou botão de arquivo!")
-        # print(json.dumps(self.dicionario_final, indent=4))
+        from time import sleep
+        loading = ft.AlertDialog(
+            content=ft.Container(
+                content=ft.ProgressRing(),
+                alignment=ft.alignment.center,
+            ),
+            bgcolor=ft.colors.TRANSPARENT,
+            modal=True,
+            disabled=True,
+        )
+        self.page.open(loading)
+
         resposta, id_pedido_de_compra = self.itens_pedido_de_compra.criar_pedido_de_compra(self.df_itens_planilha)
 
         # Chamo agora a função para adicionar os itens.
@@ -132,7 +141,10 @@ class PedidoNovoViewLocal:
             dicionario_final=self.df_itens_planilha, 
             id_pedido_de_compra=id_pedido_de_compra
         )
-        
+
+        sleep(3)
+        self.page.close(loading)
+
         self.open_dialogo(f"Pedido {resposta['ListaObjetos'][0]['Codigo']} criado com sucesso!")
         self.datatable_itens_pedido.rows = []
         self.datatable_itens_pedido.update()

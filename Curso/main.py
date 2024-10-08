@@ -1,10 +1,9 @@
 # Gerar apk Windows
 # pip install Pillow
-# flet pack .\Curso\main.py --icon .\Curso\super_volt.png --add-data .\Curso\assets:assets --hidden-import pymssql -n "NovoApp"
+# flet pack .\Curso\main.py --icon .\Curso\super_volt.png --add-data .\Curso\assets:assets --hidden-import pymssql pyodbc -n "NovoApp"
 
 # Usando pyinstaller
 # pyinstaller --onefile --add-data ".\Curso\assets;assets" --hidden-import pymssql .\Curso\main.py
-
 
 import flet as ft
 
@@ -13,11 +12,10 @@ from partials.navigation_drawer import MyNavigationDrawer
 from partials.app_bar import MyAppBar
 from views.home_view import HomeView
 from views.login import Cadastrar, Login
-from views.store_view import StoreView
 from views.editar_pedido_compra_view_local import PedidoView
 from views.criar_pedido_compra_view import PedidoNovoView
 from views.criar_pedido_compra_view_local import PedidoNovoViewLocal
-from database.users_firebase import FirebaseAuth
+from views.editar_pedido_compra_view_local_um import PedidoNovoViewLocalUm
 
 class App:
     def __init__(self, page: ft.Page):
@@ -35,13 +33,12 @@ class App:
 
         # Configurações da página
         self.page.bgcolor = ft.colors.BLACK
-        self.page.title = "Sistema SV em Flet"
+        self.page.title = "Sistema SV em Flet v1.02"
         self.page.theme_mode = "dark"  # Define o tema como escuro
         self.page.window.center()  # Centraliza a janela na tela
 
         # Define as dimensões da janela
-        page.window.width = 1465
-        page.window.height = 999        
+        self.tamanho_tela(999, 1465)
 
         # Define a animação de transição de páginas
         self.page.theme = ft.Theme(page_transitions={
@@ -62,6 +59,12 @@ class App:
         self.setup_navigation()  # Configura a navegação
         self.page.update()  # Atualiza a página
 
+    def tamanho_tela(self, height, width):
+        self.page.window.width = width
+        self.page.window.height = height
+        self.page.window.center()
+        self.page.update
+
     def setup_navigation(self):
         """Configura a navegação da aplicação"""
         def indicador_de_tela(e):
@@ -70,18 +73,28 @@ class App:
             match menu_selecionado:
                 case 0:
                     self.page.go("/")
+                    self.tamanho_tela(999, 1465)
                 case 1:
-                    self.page.go("/pedido")                    
+                    self.page.go("editar/pedido")
+                    self.tamanho_tela(999, 1465)                 
                 case 2:
-                    self.page.go("/pedido/novo/local")
+                    self.page.go("criar/pedido/excel/local")
+                    self.tamanho_tela(999, 1465)
                 case 3:
-                    self.page.go("/pedido/novo")
+                    self.page.go("criar/pedido/excel/api")
+                    self.tamanho_tela(999, 1465)
                 case 4:
-                    self.page.go("/login")
+                    self.page.go("editar/pedido/novo")
+                    self.tamanho_tela(999, 1911)
                 case 5:
-                    self.page.go("/login/novo")  
+                    self.page.go("/login")
+                    self.tamanho_tela(999, 1465)
+                case 6:
+                    self.page.go("/login/novo")
+                    self.tamanho_tela(999, 1465)
                 case _:
                     self.page.go("/")
+            print(f'Selecionei {menu_selecionado}')
 
         # Define o drawer de navegação e seu comportamento ao mudar a seleção
         self.page.drawer = MyNavigationDrawer(on_change=indicador_de_tela)
@@ -99,23 +112,30 @@ class App:
                     app_bar_title = f"Pagina Principal"
                     app_bar_color = ft.colors.GREY_800
                     include_drawer = True
-                case "/pedido/novo/local":
+                case "criar/pedido/excel/local":
+                    # Se desejar coletar alguma informação da página abaixo deve enviar self como parâmetro.
                     view = PedidoNovoViewLocal(self.page, self).get_content()
                     app_bar_title = "Importar Pedido de Compra do Excel (Local)"
                     app_bar_color = ft.colors.GREY_800
                     include_drawer = True
-                case "/pedido":
+                case "editar/pedido":
                     view = PedidoView(self.page).get_content()
                     app_bar_title = "Pedido de Compra"  
                     app_bar_color = ft.colors.GREY_800  
                     include_drawer = True
-                case "/pedido/novo":
+                case "editar/pedido/novo":
+                    # Se desejar coletar alguma informação da página abaixo deve enviar self como parâmetro.
+                    view = PedidoNovoViewLocalUm(self.page, self).get_content()
+                    app_bar_title = "Edita Pedido de Compra/Jonatha"  
+                    app_bar_color = ft.colors.GREY_800  
+                    include_drawer = True
+                case "criar/pedido/excel/api":
                     view = PedidoNovoView(self.page).get_content()
                     app_bar_title = "Importar Pedido de Compra do Excel (API)"  
                     app_bar_color = ft.colors.GREY_800  
                     include_drawer = True
                 case "/login":
-                    # view = Login(self.page).get_content()
+                    # Se desejar coletar alguma informação da página abaixo deve enviar self como parâmetro.
                     view = Login(self.page, self).get_content()
                     app_bar_title = "Login"  
                     app_bar_color = ft.colors.GREY_800  

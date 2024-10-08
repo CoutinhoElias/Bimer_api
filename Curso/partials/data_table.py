@@ -1,6 +1,14 @@
 import flet as ft
-
-# tb_tabela = ft.Ref[ft.DataTable]()
+# Tem que importar na view para poder funcionar a ordenação.
+def sort_column(e):
+    # Definir o índice da coluna a ser ordenada
+    e.control.parent.__setattr__("sort_column_index", e.column_index)
+    # Alternar a ordenação entre ascendente e descendente
+    e.control.parent.__setattr__("sort_ascending", not e.control.parent.sort_ascending)
+    # Ordenar as linhas da tabela com base no valor da célula
+    e.control.parent.rows.sort(key=lambda x: x.cells[e.column_index].content.value, reverse=not e.control.parent.sort_ascending)
+    # Atualizar a tabela
+    e.control.parent.update()
 
 # Define the create_datatable function
 # data=None, styles=None, events=None
@@ -10,7 +18,7 @@ def create_datatable(ref=None, campos=None):
     data_table = ft.DataTable(
         # width=1490,
         # height=55,
-        data_row_max_height=35, # Tamanho máximo da tabela.
+        data_row_max_height=25, # Tamanho máximo da tabela.
         # bgcolor="yellow",
         border=ft.border.all(2, "red"),
         border_radius=10,
@@ -26,6 +34,7 @@ def create_datatable(ref=None, campos=None):
         # column_spacing=200,
         ref=ref,
         columns=campos,
+        data_row_min_height=15, # Ajuste da altura mínima das linhas
         rows=[],
     )
     # Return the DataTable instance

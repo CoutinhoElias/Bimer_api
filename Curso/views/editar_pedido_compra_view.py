@@ -36,7 +36,7 @@ class PedidoView:
             label="Código", 
             hint_text="FORNECEDOR",
             col={"md": 2},
-            focused_border_color=ft.colors.YELLOW,
+            focused_border_color=ft.colors.ORANGE_300,
             input_filter=ft.NumbersOnlyInputFilter(),
             # text_style=self.input_style,
             on_blur = self.handle_change_cd_crm, 
@@ -46,7 +46,7 @@ class PedidoView:
             label="Nome", 
             hint_text="FORNECEDOR",
             col={"md": 7},
-            focused_border_color=ft.colors.YELLOW,
+            focused_border_color=ft.colors.ORANGE_300,
         )
 
         self.pg_dd_codigo_empresa = ft.Dropdown(
@@ -54,7 +54,7 @@ class PedidoView:
             label="Escolha Empresa",
             hint_text="Empresa",
             value="04",
-            focused_border_color=ft.colors.YELLOW,
+            focused_border_color=ft.colors.ORANGE_300,
             options=[
                 ft.dropdown.Option("01", text="01 - MATRIZ"),
                 ft.dropdown.Option("04", text="04 - FILIAL"),
@@ -69,7 +69,7 @@ class PedidoView:
             label="Qual Status?",
             hint_text="Status",
             value="A",
-            focused_border_color=ft.colors.YELLOW,
+            focused_border_color=ft.colors.ORANGE_300,
             options=[
                 ft.dropdown.Option("A", text="A"),
                 ft.dropdown.Option("C", text="C"),
@@ -87,7 +87,7 @@ class PedidoView:
             label="Dt. Início", 
             hint_text="Dt. Inicial",
             col={"md": 2},
-            focused_border_color=ft.colors.YELLOW,
+            focused_border_color=ft.colors.ORANGE_300,
             # icon=ft.icons.DATE_RANGE,
         )
 
@@ -95,7 +95,7 @@ class PedidoView:
             label="Dt. Fim", 
             hint_text="Dt. Final",
             col={"md": 2},
-            focused_border_color=ft.colors.YELLOW,
+            focused_border_color=ft.colors.ORANGE_300,
             # icon=ft.icons.DATE_RANGE,
         )
 

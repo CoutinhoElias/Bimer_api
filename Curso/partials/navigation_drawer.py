@@ -47,14 +47,11 @@ class MyNavigationDrawer(ft.NavigationDrawer):
                 selected_icon=ft.icons.PHONE,
             ),
 
-            # ft.NavigationDrawerDestination(
-            #     icon_content=ft.Icon(ft.icons.PHONE_OUTLINED),
-            #     label="Tela Três",
-            #     selected_icon=ft.icons.PHONE,
-            # ),
-
-
-
+            ft.NavigationDrawerDestination(
+                icon_content=ft.Icon(ft.icons.PHONE_OUTLINED),
+                label="Editar Pedido de Compra (Local)",
+                selected_icon=ft.icons.PHONE,
+            ),
         ]
 
         self.bgcolor = ft.colors.BACKGROUND

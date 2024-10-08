@@ -74,7 +74,7 @@ class Produto:
         data = json.loads(response.text)
 
         # print('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
-        # pprint(data)
+        pprint(data)
 
         # Verifica se não há erros na resposta da API
         if data['Erros'] == []:

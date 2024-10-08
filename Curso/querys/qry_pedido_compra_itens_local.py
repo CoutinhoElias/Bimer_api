@@ -7,17 +7,13 @@ from pprint import pprint
 from querys.qry_fornecedor import Fornecedor  # Importa a classe Fornecedor do módulo querys.qry_fornecedor
 from querys.qry_produto_local import BuscaCodigoProduto
 from configs.alterdata_api_config import BimerAPIParams
-
+from configs.settings import *
 from sqlalchemy import create_engine, text, Column, update, insert, select, desc, func, and_
 from sqlalchemy.orm import sessionmaker
 from partials.all_imports import connection_string
-
 from database.models import Pessoa, PedidoDeCompra, PedidoDeCompraItem, ControleAlcadaRegra, Codigo, Produto, CodigoProduto, Unidade
-
 import flet as ft
-
 from datetime import datetime
-
 
 class PedidosDeCompraItensLocal:
     def __init__(self, id_pedido_de_compra, app_instance):
@@ -46,14 +42,6 @@ class PedidosDeCompraItensLocal:
     def create_session(self):
         """Cria e retorna uma nova sessão"""
         return self.session()
-
-    # =============================================================================================================================
-    # def open_dialogo(self, e):
-    #     self.dialogo.title = ft.Text(e)
-    #     self.page.dialog = self.dialogo
-    #     self.dialogo.open = True
-    #     self.page.update()
-    # =============================================================================================================================        
 
     def _obter_token(self):
         """Obtém um token de autenticação via API"""
@@ -332,7 +320,7 @@ class PedidosDeCompraItensLocal:
         return df_itens_planilha
 
     # Retorna o próximo código inteiro da tabela escolhida
-    def retornar_proximo_codigo(self, nome_tabela, nome_campo):
+    def retornar_proximo_codigo_inteiro(self, nome_tabela, nome_campo):
         # Cria uma sessão real a partir do sessionmaker
         session = self.Session()
 
@@ -364,10 +352,29 @@ class PedidosDeCompraItensLocal:
 
         return codigo
 
+    # Função para executar a stored procedure com pyodbc
+    def retornar_proximo_codigo_id(self, entity, column, value):
+        try:
+            # Conecta ao banco de dados
+            with pyodbc.connect(connection_string_odbc) as conn:
+                with conn.cursor() as cursor:
+                    # Executa a stored procedure diretamente
+                    cursor.execute("{CALL stp_GetMultiCode(?, ?, ?)}", (entity, column, value))
+                    
+                    # Recupera os resultados
+                    result = cursor.fetchall()
+                    # print(type(result))
+                    return result[0][0]
+        except pyodbc.DatabaseError as e:
+            print(f"Erro ao acessar o banco de dados: {e}")
+            return None
+
     def criar_pedido_de_compra(self, dicionario_final):
-        # Gero um código para o campo CdChamada
-        codigo_chamada_pedido = self.retornar_proximo_codigo('PedidoDeCompra', 'CdChamada')
-        codigo_chamada_pedido = str(codigo_chamada_pedido).zfill(6)
+        # # Crio um novo ID de um pedido de compra e de quebra a sequencia inteira do pedido.
+        # id_pedido_de_compra = self.retornar_proximo_codigo_id('PedidoDeCompra', 'IdPedidoDeCompra', 1) # Modifica
+        # # Coleto a sequencia inteira do pedido para usar no insert.
+        # codigo_chamada_pedido = self.retornar_proximo_codigo_inteiro('PedidoDeCompra', 'CdChamada') # Retorna Id
+        # codigo_chamada_pedido = "{:0>6}".format(codigo_chamada_pedido)
 
         # Cria uma sessão real a partir do sessionmaker
         session = self.Session()
@@ -376,27 +383,17 @@ class PedidosDeCompraItensLocal:
         connection = self.engine.connect()
 
         try:
-            # proximo_codigo = self.retornar_proximo_codigo('PedidoDeCompra', 'IdPedidoDeCompra')
+            # Crio um novo ID de um pedido de compra e de quebra a sequencia inteira do pedido.
+            id_pedido_de_compra = self.retornar_proximo_codigo_id('PedidoDeCompra', 'IdPedidoDeCompra', 1) # Modifica
+            # Coleto a sequencia inteira do pedido para usar no insert.
+            codigo_chamada_pedido = self.retornar_proximo_codigo_inteiro('PedidoDeCompra', 'CdChamada') # Retorna Id
+            codigo_chamada_pedido = "{:0>6}".format(codigo_chamada_pedido)            
 
-            stmt_altera_novo_codigo = (update(Codigo)
-                .where(Codigo.NmTabela == 'PedidoDeCompra', Codigo.NmCampo == 'IdPedidoDeCompra')
-                .values(VlUltimoCodigo=codigo_chamada_pedido)
-            )
-
-            session.execute(stmt_altera_novo_codigo)
-            session.commit()
-
-            # Executar a stored procedure para obter um novo IdPedidoDeCompra
-            # Deve criar uma função para usar em outros módulos.
-            result_pedido = connection.execute(text("EXEC stp_GetMultiCode 'PedidoDeCompra', 'IdPedidoDeCompra', 1"))
-            id_pedido_de_compra = result_pedido.fetchone()[0]  # Obter o novo IdPedidoDeCompra gerado  
-
-            # dicionario_final.to_excel("dicionario_final.xlsx", index=False)
 
             capa = dicionario_final.iloc[[0]] # Seleciona apenas a primeira linha
 
-            quantidade_registros = len(capa)
-            print(f"Quantidade de registros: {quantidade_registros}")
+            # quantidade_registros = len(capa)
+            # print(f"Quantidade de registros: {quantidade_registros}")
 
             print(capa)
 
@@ -460,13 +457,17 @@ class PedidosDeCompraItensLocal:
                     )
                     session.add(pedido)
                     session.commit()
-                
                 except Exception as e:
                     session.rollback()
                     print(e)
+                    return e
             codigo = session.execute(text(f"SELECT CdChamada FROM PedidoDeCompra WHERE IdPedidoDeCompra = '{id_pedido_de_compra}'")).scalar()
             session.close()
             connection.close()
+        except Exception as e:
+            # session.rollback()
+            print(e)
+            return e
         finally:
             return {
                         "Erros": [
@@ -495,15 +496,20 @@ class PedidosDeCompraItensLocal:
 
         try:
             # Percorre os itens do pedido
-            for index, row in dicionario_final.iterrows():            
+            for index, row in dicionario_final.iterrows(): 
                 # Inicializa id_pedido_de_compra_item como None para iniciar o loop
                 id_pedido_de_compra_item = None
 
                 # Tenta obter o código do item até que um valor válido seja retornado
                 while id_pedido_de_compra_item is None:
+                    print('----------------------------------------------------')
+                    print(id_pedido_de_compra_item, '<<=== É para ser nulo')
+
                     # Executar a stored procedure para obter um novo código para os itens
-                    result_pedido_itens = connection.execute(text("EXEC stp_GetMultiCode 'PedidoDeCompraItem', 'IdPedidoDeCompraItem', 1"))
-                    id_pedido_de_compra_item = result_pedido_itens.fetchone()[0]
+                    id_pedido_de_compra_item = self.retornar_proximo_codigo_id('PedidoDeCompraItem', 'IdPedidoDeCompraItem', 1) # Modifica
+
+                    print(id_pedido_de_compra_item, 'É para ser diferente do anterior.')
+                    print('----------------------------------------------------')
                 try:
                     pedido_item = PedidoDeCompraItem(
                         IdPedidoDeCompraItem=id_pedido_de_compra_item,
@@ -533,26 +539,9 @@ class PedidosDeCompraItensLocal:
                 except Exception as e:
                     session.rollback()
                     print(e)
-                # finally:
-                    # connection.close()
+        except Exception as e:
+            print(e)
 
         finally:
-            # codigo = session.execute(text(f"SELECT CdChamada FROM PedidoDeCompra WHERE IdPedidoDeCompra = '{id_pedido_de_compra}'")).scalar()
             session.close()
             connection.close()
-            # return {
-            #             "Erros": [
-            #                 {
-            #                 "ErrorCode": "",
-            #                 "ErrorMessage": "",
-            #                 "PossibleCause": "",
-            #                 "StackTrace": ""
-            #                 }
-            #             ],
-            #             "ListaObjetos": [
-            #                 {
-            #                 "Identificador": "00A0000001",
-            #                 "Codigo": codigo
-            #                 }
-            #             ]
-            #         }
